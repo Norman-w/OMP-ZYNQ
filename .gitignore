@@ -4,12 +4,14 @@
 *.sim/
 *.hw/
 *.ip_user_files/
+*.gen/
 .Xil/
 *.jou
 *.log
 *.str
 *.pb
 *.backup.*
+*.dcp
 
 # Vivado 项目备份
 *.backup
