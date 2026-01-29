@@ -1,10 +1,10 @@
 /**
   *****************************************************************************
-  * 					»ùÓÚACM7606ÖÆ×÷Ò»¸ö¼òÒ×Ê¾²¨Æ÷
+  * 					ï¿½ï¿½ï¿½ï¿½ACM7606ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
   *****************************************************************************
   *
   * @File   : main.c
-  * @By     : Ð¡Ã·¸çÍÅ¶Ó
+  * @By     : Ð¡Ã·ï¿½ï¿½ï¿½Å¶ï¿½
   * @Version: V1.2
   * @Date   : 2022 / 06 / 28
   * @Shop	: https://xiaomeige.taobao.com/
@@ -14,17 +14,19 @@
 
 
 #include "COMMON.h"
+#include "xil_printf.h"
 
 
 void Handle_Events(void);
 
 
-//Ö÷º¯Êý
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 int main(void)
 {
-	Init_Homepage();//³õÊ¼»¯Ö÷Ò³ºÍ¿ØÖÆÆ÷
+	xil_printf("Hello Norman\n\r");
+	Init_Homepage();//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ò³ï¿½Í¿ï¿½ï¿½ï¿½ï¿½ï¿½
 
-	//Ñ­»·´¦ÀíÊÂ¼þ
+	//Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½
 	while(1) {
 		Handle_Events();
 	}
@@ -33,33 +35,33 @@ int main(void)
 
 void Handle_Events(void)
 {
-	//Èç¹û¿ªÆôÁËµ¥´Î´¥·¢£¬´¥·¢³É¹¦ÔòSTOP£¬È¡Ïû´¥·¢Ôò»Ö¸´Ô­×´
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½STOPï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½Ô­×´
 	if(Single_TriggerFlag && (ADC_ROUND_DONE || Cancel_Trigger)) {
-		Single_TriggerFlag = 0;	//Çå±êÖ¾
-		Handle_Single_Trigger();//´¦Àíµ¥´Î´¥·¢ÊÂ¼þ
+		Single_TriggerFlag = 0;	//ï¿½ï¿½ï¿½Ö¾
+		Handle_Single_Trigger();//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½Â¼ï¿½
 	}
-	//Ã¿ÂÖ´«ÊäÍê³ÉÔòË¢ÐÂDCache²¢¿ªÆôÏÂÒ»ÂÖ´«Êä
+	//Ã¿ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¢ï¿½ï¿½DCacheï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Ö´ï¿½ï¿½ï¿½
 	if(ADC_ROUND_DONE && Wave_Run && (!Single_TriggerFlag)) {
 		Handle_Round_Done();
 	}
-	//¶¨Ê±Ë¢ÐÂ²¨ÐÎ´°¿Ú£¬10msÒ»´Î
+	//ï¿½ï¿½Ê±Ë¢ï¿½Â²ï¿½ï¿½Î´ï¿½ï¿½Ú£ï¿½10msÒ»ï¿½ï¿½
 	if(Flag_DrawWave) {
 		Flag_DrawWave = 0;
-		Refresh_WaveWindow();	//Ë¢ÐÂ²¨ÐÎ´°¿Ú
+		Refresh_WaveWindow();	//Ë¢ï¿½Â²ï¿½ï¿½Î´ï¿½ï¿½ï¿½
 	}
-	//¶¨Ê±¼ì²â´¥Ãþ£¬30msÒ»´Î
+	//ï¿½ï¿½Ê±ï¿½ï¿½â´¥ï¿½ï¿½ï¿½ï¿½30msÒ»ï¿½ï¿½
 	if(Flag_TouchScan) {
 		Flag_TouchScan = 0;
-		Touch_Scan();					//´¥ÃþÉ¨Ãè
+		Touch_Scan();					//ï¿½ï¿½ï¿½ï¿½É¨ï¿½ï¿½
 	}
-	//¶¨Ê±Ë¢Íø¸ñ±³¾°£¬20msÒ»´Î
+	//ï¿½ï¿½Ê±Ë¢ï¿½ï¿½ï¿½ñ±³¾ï¿½ï¿½ï¿½20msÒ»ï¿½ï¿½
 	if(Flag_DrawGrid) {
 		Flag_DrawGrid = 0;
-		Draw_Grid_Background(ADC_Wave);	//»æÖÆÍø¸ñ±³¾°
+		Draw_Grid_Background(ADC_Wave);	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ñ±³¾ï¿½
 	}
-	//¶¨Ê±Ë¢²âÁ¿Öµ£¬500msÒ»´Î
+	//ï¿½ï¿½Ê±Ë¢ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½500msÒ»ï¿½ï¿½
 	if(Flag_Refresh_Val && Wave_Run) {
 		Flag_Refresh_Val = 0;
-		Refresh_Measure_Val();			//Ë¢ÐÂ²âÁ¿Öµ
+		Refresh_Measure_Val();			//Ë¢ï¿½Â²ï¿½ï¿½ï¿½Öµ
 	}
 }
