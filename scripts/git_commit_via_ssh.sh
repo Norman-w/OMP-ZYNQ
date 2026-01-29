@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 通过 SSH 在 Windows 上执行 git add/commit/push，避免在挂载盘上跑 git 超时
+# 通过 SSH 在 Windows 上执行 git add/commit，避免在挂载盘上跑 git 超时
 # 仓库在 Windows 上的实际路径：D:\ZYNQ\Norman\OMP
 
 set -e
@@ -10,7 +10,6 @@ WIN_REPO="D:/ZYNQ/Norman/OMP"
 
 [[ -z "$*" ]] && echo "用法: $0 <commit message>" >&2 && exit 1
 COMMIT_MSG="$*"
-# 避免消息里的双引号破坏远程命令
 COMMIT_MSG_ESC="${COMMIT_MSG//\"/\\\"}"
 
 choose_server() {
@@ -35,5 +34,7 @@ SERVER=$(choose_server)
 SERVER="${SERVER//[$'\r\n']}"
 [[ -z "$SERVER" ]] && exit 1
 
-echo "在 ${USER}@${SERVER} 上执行 git add/commit/push ..." >&2
-ssh "${USER}@${SERVER}" "cd $WIN_REPO && git add scripts/ .gitignore && git commit -m \"$COMMIT_MSG_ESC\" && git push"
+echo "在 ${USER}@${SERVER} 上执行 git add/commit ..." >&2
+ssh "${USER}@${SERVER}" "cd $WIN_REPO && git add scripts/ .gitignore && git commit -m \"$COMMIT_MSG_ESC\""
+echo "" >&2
+echo "必要时请在 Windows 本机执行 git push 推送到远程。" >&2

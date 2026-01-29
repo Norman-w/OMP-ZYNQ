@@ -30,12 +30,12 @@ ssh-copy-id -i ~/.ssh/id_ed25519.pub ws@192.168.7.77
 
 ---
 
-## 通过 SSH 在 Windows 上执行 git（提交并推送）
+## 通过 SSH 在 Windows 上执行 git 提交
 
-当本机是通过共享挂载访问 `D:\ZYNQ\Norman\OMP` 时，在挂载盘上跑 git 容易超时。可改为 SSH 到 Windows，在仓库所在盘执行 git：
+当本机是通过共享挂载访问 `D:\ZYNQ\Norman\OMP` 时，在挂载盘上跑 git 容易超时。可改为 SSH 到 Windows，在仓库所在盘执行提交：
 
 ```bash
-./scripts/git_push_via_ssh.sh "📜 新增 scripts：拉取 BOOT.BIN 到 SD 卡脚本与免密配置说明"
+./scripts/git_commit_via_ssh.sh "📜 新增 scripts：拉取 BOOT.BIN 到 SD 卡脚本与免密配置说明"
 ```
 
-commit message 通过第一个参数传入（可含空格）。选择 88 或 77 后，会在对应 Windows 上执行：`git add scripts/`、`git commit -m "..."`、`git push`。
+commit message 通过第一个参数传入（可含空格）。选择 88 或 77 后，会在对应 Windows 上执行 `git add scripts/ .gitignore`、`git commit`。**必要时请在 Windows 本机执行 git push 推送到远程。**

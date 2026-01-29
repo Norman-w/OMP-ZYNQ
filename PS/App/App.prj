@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ASCII"?>
 <sdkproject:SdkProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdkproject="http://www.xilinx.com/sdkproject" name="App" location="D:/ZYNQ/Norman/OMP/App" platform="D:/ZYNQ/Norman/OMP/Standalone/export/Standalone/Standalone.xpfm" platformUID="xilinx:::0.0(custom)" systemProject="App_system" sysConfig="Standalone" runtime="C/C++" cpu="Standalone" cpuInstance="ps7_cortexa9_0" os="standalone" mssSignature="0b3158cae96c88de69475eebfbd32b43">
-  <configuration name="Debug" id="xilinx.gnu.armv7.exe.debug.18013308">
+  <configuration name="Debug" id="xilinx.gnu.armv7.exe.debug.18013308" dirty="true">
     <configBuildOptions xsi:type="sdkproject:SdkOptions"/>
     <lastBuildOptions xsi:type="sdkproject:SdkOptions"/>
   </configuration>

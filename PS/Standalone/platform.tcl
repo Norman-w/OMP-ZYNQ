@@ -42,3 +42,5 @@ bsp write
 bsp reload
 catch {bsp regenerate}
 platform generate -domains Standalone,standalone_domain 
+platform clean
+platform generate
