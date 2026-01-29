@@ -52,15 +52,22 @@ main() {
   echo "目标: $DEST"
   echo ""
 
-  # 检查远程文件是否存在并获取时间
+  # 检查远程文件是否存在并计算哈希值
   echo "正在检查远程文件..."
-  REMOTE_TIME=$(ssh "${USER}@${SERVER}" "stat -c '%y' '$REMOTE_PATH' 2>/dev/null || stat -f '%Sm' '$REMOTE_PATH' 2>/dev/null" 2>/dev/null)
-  if [[ -z "$REMOTE_TIME" ]]; then
-    echo "❌ 错误: 无法获取远程文件时间，文件可能不存在"
+  REMOTE_HASH=$(ssh "${USER}@${SERVER}" "if [ -f '$REMOTE_PATH' ]; then md5sum '$REMOTE_PATH' 2>/dev/null | cut -d' ' -f1 || md5 -q '$REMOTE_PATH' 2>/dev/null; else echo ''; fi" 2>/dev/null)
+  if [[ -z "$REMOTE_HASH" ]]; then
+    echo "❌ 错误: 远程文件不存在或无法计算哈希值"
     exit 1
   fi
-  echo "📅 远程文件生成时间: $REMOTE_TIME"
+  echo "🔐 远程文件 MD5: $REMOTE_HASH"
   echo ""
+
+  # 备份旧文件（如果存在）
+  BACKUP_DEST="${DEST}.bak"
+  if [[ -f "$DEST" ]]; then
+    echo "📦 备份旧文件: $BACKUP_DEST"
+    cp "$DEST" "$BACKUP_DEST" 2>/dev/null || true
+  fi
 
   # 下载文件
   echo "正在下载..."
@@ -72,25 +79,30 @@ main() {
   echo ""
   echo "正在验证文件..."
 
-  # 检查本地文件时间
+  # 检查本地文件是否存在
   if [[ ! -f "$DEST" ]]; then
     echo "❌ 错误: 文件下载后不存在于目标位置"
     exit 1
   fi
 
-  # 获取本地文件时间（macOS 使用 stat -f，Linux 使用 stat -c）
-  LOCAL_TIME=$(stat -f '%Sm' "$DEST" 2>/dev/null || stat -c '%y' "$DEST" 2>/dev/null)
+  # 计算本地文件哈希值
+  LOCAL_HASH=$(md5sum "$DEST" 2>/dev/null | cut -d' ' -f1 || md5 -q "$DEST" 2>/dev/null)
   
-  # 比较时间（简化比较，只比较日期和时间部分，忽略时区差异）
-  REMOTE_TIMESTAMP=$(ssh "${USER}@${SERVER}" "stat -c '%Y' '$REMOTE_PATH' 2>/dev/null || stat -f '%m' '$REMOTE_PATH' 2>/dev/null" 2>/dev/null)
-  LOCAL_TIMESTAMP=$(stat -f '%m' "$DEST" 2>/dev/null || stat -c '%Y' "$DEST" 2>/dev/null)
-  
-  # 允许 2 秒的时间差（考虑网络传输时间）
-  TIME_DIFF=$((REMOTE_TIMESTAMP - LOCAL_TIMESTAMP))
-  if [[ ${TIME_DIFF#-} -le 2 ]]; then
-    echo "📅 本地文件时间: $LOCAL_TIME"
+  # 对比哈希值
+  if [[ "$REMOTE_HASH" == "$LOCAL_HASH" ]]; then
+    echo "🔐 本地文件 MD5: $LOCAL_HASH"
     echo ""
-    echo -e "\033[32m✅ 文件验证成功！时间匹配正确。\033[0m"
+    echo -e "\033[32m✅ 文件验证成功！哈希值匹配，文件已正确下载。\033[0m"
+    
+    # 如果备份文件存在，检查是否与新文件相同
+    if [[ -f "$BACKUP_DEST" ]]; then
+      BACKUP_HASH=$(md5sum "$BACKUP_DEST" 2>/dev/null | cut -d' ' -f1 || md5 -q "$BACKUP_DEST" 2>/dev/null)
+      if [[ "$BACKUP_HASH" == "$LOCAL_HASH" ]]; then
+        echo "ℹ️  提示: 新文件与备份文件相同（可能未重新编译）"
+      else
+        echo "✅ 新文件与旧文件不同，已更新"
+      fi
+    fi
     echo ""
     echo "正在安全弹出 SD 卡..."
 
@@ -105,17 +117,24 @@ main() {
       exit 1
     fi
   else
-    echo "📅 本地文件时间: $LOCAL_TIME"
+    echo "🔐 本地文件 MD5: $LOCAL_HASH"
     echo ""
-    echo -e "\033[31m❌ 错误: 文件时间不匹配！\033[0m"
-    echo "   远程时间戳: $REMOTE_TIMESTAMP"
-    echo "   本地时间戳: $LOCAL_TIMESTAMP"
-    echo "   时间差: ${TIME_DIFF#-} 秒"
+    echo -e "\033[31m❌ 错误: 文件哈希值不匹配！\033[0m"
+    echo "   远程 MD5: $REMOTE_HASH"
+    echo "   本地 MD5: $LOCAL_HASH"
     echo ""
     echo "可能的原因："
-    echo "  1. 文件未正确下载"
-    echo "  2. SD 卡写入失败"
-    echo "  3. 系统时间不同步"
+    echo "  1. 文件下载不完整"
+    echo "  2. SD 卡写入失败或损坏"
+    echo "  3. 网络传输错误"
+    echo ""
+    
+    # 如果备份文件存在，恢复备份
+    if [[ -f "$BACKUP_DEST" ]]; then
+      echo "🔄 正在恢复备份文件..."
+      cp "$BACKUP_DEST" "$DEST" 2>/dev/null && echo "✅ 已恢复备份文件" || echo "❌ 恢复备份失败"
+    fi
+    
     echo ""
     echo "请检查网络连接和 SD 卡状态后重试。"
     exit 1
