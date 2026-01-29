@@ -39,3 +39,14 @@ RemoteSystemsTempFiles/
 # 但保留必要的源文件和配置文件
 tempdsa/
 
+# Vitis 应用程序编译产物
+**/Debug/
+**/Release/
+*.elf
+*.a
+*.o
+*.d
+*.mk
+*.log
+IDE.log
+
