@@ -318,7 +318,7 @@ int network_monitor_init(void)
 
 /**
  * @brief 网络监测定时器回调（每10ms调用一次）
- * 应该在platform_zynq.c的timer_callback中调用
+ * 在ISR.c的ScuTimer_IRQ_Handler中调用（10ms定时器）
  */
 void network_monitor_timer_tick(void)
 {

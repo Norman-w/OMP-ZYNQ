@@ -141,9 +141,6 @@ timer_callback(XScuTimer * TimerInstance)
 		DetectEthLinkStatus = 0;
 	}
 
-	/* 网络监测：每5秒ping一次目标IP */
-	network_monitor_timer_tick();
-
 	XScuTimer_ClearInterruptStatus(TimerInstance);
 }
 

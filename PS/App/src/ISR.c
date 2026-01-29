@@ -13,6 +13,7 @@
 **/
 
 #include "ISR.h"
+#include "network_init.h"
 
 //����ʱ���־λ
 static uint8_t Flag_20ms = 0;
