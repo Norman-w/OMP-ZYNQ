@@ -27,6 +27,7 @@
 #include "lwip/ip.h"
 #include "lwip/pbuf.h"
 #include "lwip/err.h"
+#include "lwip/prot/icmp.h"
 #include "netif/xadapter.h"
 #include "netif/xtopology.h"
 #include "xemacps.h"
@@ -69,6 +70,10 @@
 #define NETWORK_MONITOR_TARGET_IP    "192.168.0.3"
 #define NETWORK_MONITOR_INTERVAL     500  // 5秒 = 500 * 10ms (定时器每10ms触发一次)
 
+// Ping参数定义
+#define PING_ID      0x1234
+#define PING_SEQNO   0x0001
+
 // 全局变量
 static struct netif *g_netif = NULL;
 static int g_network_init_status = 0;  // 0=未初始化, 1=成功, -1=失败
@@ -83,7 +88,9 @@ static int g_network_monitor_counter = 0;
  * @brief 快速配置YT8531 PHY为千兆模式（非阻塞，快速返回）
  * @param emacps_instance EMACPS实例指针
  * @return 0=成功, -1=失败
+ * @note 暂时未使用，保留以备将来需要
  */
+#if 0
 static int configure_yt8531_gigabit_mode(XEmacPs *emacps_instance)
 {
     u16 phy_reg;
@@ -141,6 +148,7 @@ static int configure_yt8531_gigabit_mode(XEmacPs *emacps_instance)
     xil_printf("[NET] YT8531 PHY配置完成（异步协商中）\n\r");
     return 0;
 }
+#endif
 
 /**
  * @brief 初始化网络接口并设置固定IP
@@ -151,8 +159,6 @@ int network_init(void)
     ip_addr_t ipaddr, netmask, gw;
     static struct netif netif_struct;  // 使用静态分配，避免内存管理问题
     struct netif *netif = &netif_struct;
-    XEmacPs *emacps_instance;
-    int status;
     unsigned char mac_ethernet_address[] = {0x00, 0x0a, 0x35, 0x00, 0x01, 0x02};
 
     xil_printf("\n\r");
