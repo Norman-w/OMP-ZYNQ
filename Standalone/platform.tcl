@@ -22,3 +22,4 @@ bsp write
 bsp reload
 catch {bsp regenerate}
 platform config -updatehw {D:/ZYNQ/Norman/OMP/PL/System_wrapper.xsa}
+bsp reload
