@@ -36,4 +36,4 @@ SERVER="${SERVER//[$'\r\n']}"
 [[ -z "$SERVER" ]] && exit 1
 
 echo "在 ${USER}@${SERVER} 上执行 git add/commit/push ..." >&2
-ssh "${USER}@${SERVER}" "cd $WIN_REPO && git add scripts/ && git commit -m \"$COMMIT_MSG_ESC\" && git push"
+ssh "${USER}@${SERVER}" "cd $WIN_REPO && git add scripts/ .gitignore && git commit -m \"$COMMIT_MSG_ESC\" && git push"
