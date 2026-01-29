@@ -21,6 +21,12 @@
 #include "lwip/ip_addr.h"
 #include "lwip/ip4_addr.h"
 #include "lwip/mem.h"
+#include "lwip/icmp.h"
+#include "lwip/raw.h"
+#include "lwip/inet_chksum.h"
+#include "lwip/ip.h"
+#include "lwip/pbuf.h"
+#include "lwip/err.h"
 #include "netif/xadapter.h"
 #include "netif/xtopology.h"
 #include "xemacps.h"
@@ -59,9 +65,19 @@
 #define NETWORK_FIXED_NETMASK        "255.255.255.0"
 #define NETWORK_FIXED_GATEWAY        "192.168.0.1"
 
+// 网络监测配置
+#define NETWORK_MONITOR_TARGET_IP    "192.168.0.3"
+#define NETWORK_MONITOR_INTERVAL     500  // 5秒 = 500 * 10ms (定时器每10ms触发一次)
+
 // 全局变量
 static struct netif *g_netif = NULL;
 static int g_network_init_status = 0;  // 0=未初始化, 1=成功, -1=失败
+static struct raw_pcb *g_ping_pcb = NULL;
+static ip_addr_t g_ping_target;
+static int g_ping_counter = 0;
+static int g_ping_success_count = 0;
+static int g_ping_fail_count = 0;
+static int g_network_monitor_counter = 0;
 
 /**
  * @brief 快速配置YT8531 PHY为千兆模式（非阻塞，快速返回）
@@ -227,6 +243,9 @@ int network_init(void)
     xil_printf("[NET] 网络初始化完成 (异步模式)\n\r");
     xil_printf("========================================\n\r");
     xil_printf("\n\r");
+    
+    // 初始化网络监测（ping功能）
+    network_monitor_init();
 
     return 0;
 }
@@ -247,6 +266,201 @@ int network_get_init_status(void)
 struct netif* network_get_netif(void)
 {
     return g_netif;
+}
+
+/**
+ * @brief ICMP ping接收回调函数
+ */
+static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
+{
+    struct icmp_echo_hdr *iecho;
+    u8_t icmp_type;
+    
+    if (p->tot_len < (IP_HLEN + sizeof(struct icmp_echo_hdr))) {
+        pbuf_free(p);
+        return 0;
+    }
+    
+    // 跳过IP头
+    if (pbuf_header(p, -IP_HLEN) != 0) {
+        pbuf_free(p);
+        return 0;
+    }
+    
+    iecho = (struct icmp_echo_hdr *)p->payload;
+    icmp_type = ICMPH_TYPE(iecho);
+    
+    // 检查是否是ICMP ECHO REPLY (类型0)
+    if (icmp_type == 0) {  // ICMP_ER (Echo Reply)
+        // 检查ID和序列号是否匹配
+        if ((iecho->id == PING_ID) && (iecho->seqno == htons(PING_SEQNO))) {
+            // Ping成功
+            g_ping_success_count++;
+            xil_printf("[NET] Ping %s 成功\n\r", NETWORK_MONITOR_TARGET_IP);
+            pbuf_free(p);
+            return 1;  // 吃掉这个包
+        }
+    }
+    
+    // 恢复IP头
+    pbuf_header(p, IP_HLEN);
+    pbuf_free(p);
+    return 0;
+}
+
+/**
+ * @brief 发送ICMP ping请求
+ * @return 0=成功, -1=失败
+ */
+static int ping_send(void)
+{
+    struct pbuf *p;
+    struct icmp_echo_hdr *iecho;
+    size_t ping_size = 32;  // ping数据包大小
+    
+    if (g_ping_pcb == NULL || g_netif == NULL) {
+        return -1;
+    }
+    
+    // 检查网络接口是否就绪
+    if (!netif_is_up(g_netif) || !netif_is_link_up(g_netif)) {
+        return -1;
+    }
+    
+    // 分配pbuf
+    p = pbuf_alloc(PBUF_IP, ping_size, PBUF_RAM);
+    if (p == NULL) {
+        return -1;
+    }
+    
+    if (p->len < ping_size) {
+        pbuf_free(p);
+        return -1;
+    }
+    
+    // 填充ICMP echo请求
+    iecho = (struct icmp_echo_hdr *)p->payload;
+    ICMPH_TYPE_SET(iecho, ICMP_ECHO);  // ICMP_ECHO = 8
+    ICMPH_CODE_SET(iecho, 0);
+    iecho->chksum = 0;
+    iecho->id = PING_ID;
+    iecho->seqno = htons(PING_SEQNO);
+    
+    // 填充数据
+    size_t data_len = ping_size - sizeof(struct icmp_echo_hdr);
+    char *data_ptr = (char *)iecho + sizeof(struct icmp_echo_hdr);
+    for (size_t i = 0; i < data_len; i++) {
+        data_ptr[i] = (char)i;
+    }
+    
+    // 计算校验和
+    iecho->chksum = inet_chksum(iecho, ping_size);
+    
+    // 发送ping包
+    if (raw_sendto(g_ping_pcb, p, &g_ping_target) != ERR_OK) {
+        pbuf_free(p);
+        return -1;
+    }
+    
+    pbuf_free(p);
+    return 0;
+}
+
+// Ping参数定义
+#define PING_ID      0x1234
+#define PING_SEQNO   0x0001
+
+/**
+ * @brief 初始化网络监测（ping功能）
+ * @return 0=成功, -1=失败
+ */
+int network_monitor_init(void)
+{
+    if (g_netif == NULL) {
+        return -1;
+    }
+    
+    // 解析目标IP地址
+    if (ip4addr_aton(NETWORK_MONITOR_TARGET_IP, &g_ping_target) == 0) {
+        xil_printf("[NET] 错误: 监测目标IP地址格式无效: %s\n\r", NETWORK_MONITOR_TARGET_IP);
+        return -1;
+    }
+    
+    // 创建RAW PCB用于ICMP
+    g_ping_pcb = raw_new(IP_PROTO_ICMP);
+    if (g_ping_pcb == NULL) {
+        xil_printf("[NET] 错误: 创建ICMP RAW PCB失败\n\r");
+        return -1;
+    }
+    
+    // 设置接收回调
+    raw_recv(g_ping_pcb, ping_recv, NULL);
+    raw_bind(g_ping_pcb, IP_ADDR_ANY);
+    
+    // 初始化计数器
+    g_ping_counter = 0;
+    g_ping_success_count = 0;
+    g_ping_fail_count = 0;
+    g_network_monitor_counter = 0;
+    
+    xil_printf("[NET] 网络监测初始化完成，目标: %s\n\r", NETWORK_MONITOR_TARGET_IP);
+    return 0;
+}
+
+/**
+ * @brief 网络监测定时器回调（每10ms调用一次）
+ * 应该在platform_zynq.c的timer_callback中调用
+ */
+void network_monitor_timer_tick(void)
+{
+    if (g_network_init_status != 1 || g_ping_pcb == NULL) {
+        return;
+    }
+    
+    g_network_monitor_counter++;
+    
+    // 每5秒执行一次ping
+    if (g_network_monitor_counter >= NETWORK_MONITOR_INTERVAL) {
+        g_network_monitor_counter = 0;
+        g_ping_counter++;
+        
+        // 记录发送前的成功计数
+        int success_before = g_ping_success_count;
+        
+        // 发送ping
+        int result = ping_send();
+        if (result == 0) {
+            // Ping发送成功，等待响应（响应在ping_recv中处理）
+            // 注意：由于是异步的，我们无法立即知道是否成功
+            // 如果下次ping时成功计数没有增加，说明这次失败了
+        } else {
+            // Ping发送失败
+            g_ping_fail_count++;
+            xil_printf("[NET] Ping %s 失败 (发送失败)\n\r", NETWORK_MONITOR_TARGET_IP);
+        }
+        
+        // 检查上次ping是否成功（通过比较成功计数）
+        // 注意：这个检查有延迟，因为响应是异步的
+        if (g_ping_counter > 1 && g_ping_success_count == success_before) {
+            // 上次ping没有收到响应，认为失败
+            g_ping_fail_count++;
+        }
+        
+        // 每10次ping报告一次统计
+        if (g_ping_counter % 10 == 0 && g_ping_counter > 0) {
+            int total_attempts = g_ping_success_count + g_ping_fail_count;
+            if (total_attempts > 0) {
+                int fail_rate = (g_ping_fail_count * 100) / total_attempts;
+                xil_printf("[NET] 网络监测统计: 总计=%d, 成功=%d, 失败=%d, 失败率=%d%%\n\r",
+                          total_attempts, g_ping_success_count, g_ping_fail_count, fail_rate);
+                
+                // 如果失败率超过50%，报告网络不好使
+                if (fail_rate > 50) {
+                    xil_printf("[NET] ⚠️  警告: 网络连接异常，失败率=%d%%\n\r", fail_rate);
+                }
+            }
+        }
+    }
 }
 
 #endif // __arm__ || __aarch64__

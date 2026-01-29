@@ -40,6 +40,18 @@ int network_get_init_status(void);
  */
 struct netif* network_get_netif(void);
 
+/**
+ * @brief 初始化网络监测（ping功能）
+ * @return 0=成功, -1=失败
+ */
+int network_monitor_init(void);
+
+/**
+ * @brief 网络监测定时器回调（每10ms调用一次）
+ * 应该在platform_zynq.c的timer_callback中调用
+ */
+void network_monitor_timer_tick(void);
+
 #endif // __arm__ || __aarch64__
 
 #ifdef __cplusplus

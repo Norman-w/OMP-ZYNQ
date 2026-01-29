@@ -56,6 +56,7 @@
 #include "platform.h"
 #include "platform_config.h"
 #include "netif/xadapter.h"
+#include "network_init.h"
 #ifdef PLATFORM_ZYNQ
 #include "xscutimer.h"
 
@@ -139,6 +140,9 @@ timer_callback(XScuTimer * TimerInstance)
 		eth_link_detect(echo_netif);
 		DetectEthLinkStatus = 0;
 	}
+
+	/* 网络监测：每5秒ping一次目标IP */
+	network_monitor_timer_tick();
 
 	XScuTimer_ClearInterruptStatus(TimerInstance);
 }
