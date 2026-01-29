@@ -1,6 +1,7 @@
 #include "Handle_Process.h"
 #include "Create_Features.h"
 #include "logo.h"
+#include "network_init.h"
 
 //����������ݱ���
 char str[30];	//�����ַ���
@@ -91,6 +92,9 @@ void Init_Homepage()
 			ADC_DATA_LENGTH*2, XAXIDMA_DEVICE_TO_DMA);
 	Measure_Point = ADC_Wave.Wave_Area.X1 + ADC_Wave.Wave_Area.Width/2;		//������ΪY����
 	Trigger_Point = ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height/2;	//������ΪX����
+	//网络初始化 - 在硬件就绪后调用
+	//注意：失败不能影响示波器正常功能
+	network_init();
 }
 void Refresh_Measure_Val()
 {
