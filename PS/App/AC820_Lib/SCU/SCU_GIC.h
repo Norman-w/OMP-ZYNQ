@@ -5,10 +5,10 @@
 #include "COMMON.h"
 
 
-#define	HIGH_Level_Sensitive	0x01	//¸ßµçÆ½Ãô¸Ð(1)
-#define	Rising_Edge_Sensitive	0x03	//ÉÏÉýÑØÃô¸Ð(0->1)
+#define	HIGH_Level_Sensitive	0x01	//ï¿½ßµï¿½Æ½ï¿½ï¿½ï¿½ï¿½(1)
+#define	Rising_Edge_Sensitive	0x03	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(0->1)
 
-XScuGic ScuGic;	//Í¨ÓÃÖÐ¶Ï¿ØÖÆÆ÷
+extern XScuGic ScuGic;	//Í¨ï¿½ï¿½ï¿½Ð¶Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½
 
 void ScuGic_Init();
 void Set_ScuGic_Link(uint16_t IntrId, uint8_t Priority, uint8_t Trigger,

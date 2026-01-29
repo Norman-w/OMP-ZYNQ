@@ -31,8 +31,15 @@
 
 #include "lwip/err.h"
 #include "lwip/tcp.h"
+#include "lwip/netif.h"
 #if defined (__arm__) || defined (__aarch64__)
 #include "xil_printf.h"
+#endif
+
+/* Define echo_netif if not defined elsewhere */
+#ifndef ECHO_NETIF_DEFINED
+struct netif *echo_netif = NULL;
+#define ECHO_NETIF_DEFINED
 #endif
 
 int transfer_data() {

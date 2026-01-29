@@ -9,7 +9,7 @@
 #define	ADC_ROUND_DONE 		(RxDone)//ADC一轮传输完成标志
 
 
-XAxiDma AxiDma0;
+extern XAxiDma AxiDma0;
 
 
 

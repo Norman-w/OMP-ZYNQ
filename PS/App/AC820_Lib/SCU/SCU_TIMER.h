@@ -3,7 +3,7 @@
 
 #include "COMMON.h"
 
-XScuTimer ScuTimer;		//Ë½ÓÐ¶¨Ê±Æ÷
+extern XScuTimer ScuTimer;		//Ë½ï¿½Ð¶ï¿½Ê±ï¿½ï¿½
 
 void ScuTimer_Int_Init(uint32_t Load_Val);
 
