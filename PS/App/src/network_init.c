@@ -21,13 +21,6 @@
 #include "lwip/ip_addr.h"
 #include "lwip/ip4_addr.h"
 #include "lwip/mem.h"
-#include "lwip/icmp.h"
-#include "lwip/raw.h"
-#include "lwip/inet_chksum.h"
-#include "lwip/ip.h"
-#include "lwip/pbuf.h"
-#include "lwip/err.h"
-#include "lwip/prot/icmp.h"
 #include "netif/xadapter.h"
 #include "netif/xtopology.h"
 #include "xemacps.h"
@@ -77,7 +70,6 @@
 // 全局变量
 static struct netif *g_netif = NULL;
 static int g_network_init_status = 0;  // 0=未初始化, 1=成功, -1=失败
-static struct raw_pcb *g_ping_pcb = NULL;
 static ip_addr_t g_ping_target;
 static int g_ping_counter = 0;
 static int g_ping_success_count = 0;
@@ -419,7 +411,7 @@ int network_monitor_init(void)
  */
 void network_monitor_timer_tick(void)
 {
-    if (g_network_init_status != 1 || g_ping_pcb == NULL) {
+    if (g_network_init_status != 1 || g_netif == NULL) {
         return;
     }
     
@@ -430,39 +422,32 @@ void network_monitor_timer_tick(void)
         g_network_monitor_counter = 0;
         g_ping_counter++;
         
-        // 记录发送前的成功计数
-        int success_before = g_ping_success_count;
-        
-        // 发送ping
-        int result = ping_send();
-        if (result == 0) {
-            // Ping发送成功，等待响应（响应在ping_recv中处理）
-            // 注意：由于是异步的，我们无法立即知道是否成功
-            // 如果下次ping时成功计数没有增加，说明这次失败了
+        // 检查网络状态
+        int status = network_status_check();
+        if (status == 0) {
+            // 网络状态正常
+            g_ping_success_count++;
         } else {
-            // Ping发送失败
+            // 网络状态异常
             g_ping_fail_count++;
-            xil_printf("[NET] Ping %s 失败 (发送失败)\n\r", NETWORK_MONITOR_TARGET_IP);
+            xil_printf("[NET] 网络状态检查失败: 接口=%s, 链路=%s, IP=%s\n\r",
+                      netif_is_up(g_netif) ? "UP" : "DOWN",
+                      netif_is_link_up(g_netif) ? "UP" : "DOWN",
+                      ip4addr_ntoa(&g_netif->ip_addr));
         }
         
-        // 检查上次ping是否成功（通过比较成功计数）
-        // 注意：这个检查有延迟，因为响应是异步的
-        if (g_ping_counter > 1 && g_ping_success_count == success_before) {
-            // 上次ping没有收到响应，认为失败
-            g_ping_fail_count++;
-        }
-        
-        // 每10次ping报告一次统计
+        // 每10次检查报告一次统计
         if (g_ping_counter % 10 == 0 && g_ping_counter > 0) {
             int total_attempts = g_ping_success_count + g_ping_fail_count;
             if (total_attempts > 0) {
                 int fail_rate = (g_ping_fail_count * 100) / total_attempts;
-                xil_printf("[NET] 网络监测统计: 总计=%d, 成功=%d, 失败=%d, 失败率=%d%%\n\r",
+                xil_printf("[NET] 网络监测统计: 总计=%d, 正常=%d, 异常=%d, 异常率=%d%%\n\r",
                           total_attempts, g_ping_success_count, g_ping_fail_count, fail_rate);
                 
-                // 如果失败率超过50%，报告网络不好使
+                // 如果异常率超过50%，报告网络不好使
                 if (fail_rate > 50) {
-                    xil_printf("[NET] ⚠️  警告: 网络连接异常，失败率=%d%%\n\r", fail_rate);
+                    xil_printf("[NET] ⚠️  警告: 网络连接异常，异常率=%d%%\n\r", fail_rate);
+                    xil_printf("[NET] 注意: 无法ping通 %s，网络可能未正常工作\n\r", NETWORK_MONITOR_TARGET_IP);
                 }
             }
         }
