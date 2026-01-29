@@ -16,3 +16,8 @@ platform write
 platform generate -domains 
 platform active {Standalone}
 platform generate
+bsp reload
+bsp setlib -name lwip211 -ver 1.5
+bsp write
+bsp reload
+catch {bsp regenerate}
