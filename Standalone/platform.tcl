@@ -21,3 +21,4 @@ bsp setlib -name lwip211 -ver 1.5
 bsp write
 bsp reload
 catch {bsp regenerate}
+platform config -updatehw {D:/ZYNQ/Norman/OMP/PL/System_wrapper.xsa}
