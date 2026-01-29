@@ -8,7 +8,7 @@
   * @Version: V1.2
   * @Date   : 2022 / 06 / 28
   * @Shop	: https://xiaomeige.taobao.com/
-  * @Forum  : http://www.corecourse.cn/
+  * @Forum  : OMP BY NORMAN (WIP) Basedon Xiaomeige
   *****************************************************************************
 **/
 

@@ -2,61 +2,61 @@
 #include "Create_Features.h"
 #include "logo.h"
 
-//¶¨Òå¸÷ÖÖÊý¾Ý±äÁ¿
-char str[30];	//»º´æ×Ö·û´®
-uint16_t *P_ADC_Data = (uint16_t *)ADC_DATA_BASE;//´´½¨Ò»¸öÖ¸ÕëÖ¸ÏòADCÊý¾ÝÇøÓò
-uint8_t Wave_Run = 1;		//²¨ÐÎ²É¼¯±êÖ¾
-uint8_t Sample_Set = 4;		//²ÉÑùÂÊµµÎ»£¬Ä¬ÈÏÎª20KµµÎ»,0~7¹²8µµ
-uint8_t Sample_Set_Last = 0;//¼ÇÂ¼ÉÏÒ»´Î²ÉÑùÂÊµµÎ»
-uint8_t Trigger_Mode = 0;	//0±íÊ¾×Ô¶¯´¥·¢£¬1±íÊ¾ÊÖ¶¯´¥·¢£¬2±íÊ¾µ¥´Î´¥·¢
-int16_t Trigger_Value = 0;	//²ÉÑù´¥·¢Öµ
-int16_t Trigger_Value_Last = 0;//ÉÏÒ»´Î²ÉÑù´¥·¢Öµ
-//²ÉÑùÂÊÉèÖÃ£¨KHz£©AD7606×î´óÎª200KHz
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½
+char str[30];	//ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½
+uint16_t *P_ADC_Data = (uint16_t *)ADC_DATA_BASE;//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ö¸ï¿½ï¿½Ö¸ï¿½ï¿½ADCï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+uint8_t Wave_Run = 1;		//ï¿½ï¿½ï¿½Î²É¼ï¿½ï¿½ï¿½Ö¾
+uint8_t Sample_Set = 4;		//ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½Î»ï¿½ï¿½Ä¬ï¿½ï¿½Îª20Kï¿½ï¿½Î»,0~7ï¿½ï¿½8ï¿½ï¿½
+uint8_t Sample_Set_Last = 0;//ï¿½ï¿½Â¼ï¿½ï¿½Ò»ï¿½Î²ï¿½ï¿½ï¿½ï¿½Êµï¿½Î»
+uint8_t Trigger_Mode = 0;	//0ï¿½ï¿½Ê¾ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½Ê¾ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½2ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½
+int16_t Trigger_Value = 0;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
+int16_t Trigger_Value_Last = 0;//ï¿½ï¿½Ò»ï¿½Î²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½KHzï¿½ï¿½AD7606ï¿½ï¿½ï¿½Îª200KHz
 uint32_t Sample_Rate[8] = {1,2,5,10,20,50,100,200};
-uint8_t CH_Set = 0;	//²ÉÑùÍ¨µÀÉèÖÃ
+uint8_t CH_Set = 0;	//ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 uint16_t Measure_Point,Measure_Point_Last;
 uint16_t Trigger_Point,Trigger_Point_Last;
-int16_t Wave_Data[ADC_DATA_LENGTH] = {0};//´æ´¢µ±Ç°²¨ÐÎÊý¾Ý
-int16_t Pre_Wave_Data[ADC_DATA_LENGTH] = {0};//´æ´¢ÉÏÒ»´Î²¨ÐÎÊý¾Ý
-float Point_Voltage;	//±êµãµÄµçÑ¹Öµ
-float Point_Time;		//±êµãµÄÊ±¼ä
-uint8_t Single_TriggerFlag = 0;	//´¥·¢±êÖ¾
-uint8_t Cancel_Trigger = 0;	//È¡Ïû´¥·¢
-uint32_t ADC_Wave_Offset = 0;//²¨ÐÎÊý¾ÝµØÖ·Æ«ÒÆÖµ
+int16_t Wave_Data[ADC_DATA_LENGTH] = {0};//ï¿½æ´¢ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+int16_t Pre_Wave_Data[ADC_DATA_LENGTH] = {0};//ï¿½æ´¢ï¿½ï¿½Ò»ï¿½Î²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+float Point_Voltage;	//ï¿½ï¿½ï¿½Äµï¿½Ñ¹Öµ
+float Point_Time;		//ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
+uint8_t Single_TriggerFlag = 0;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾
+uint8_t Cancel_Trigger = 0;	//È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+uint32_t ADC_Wave_Offset = 0;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½Ö·Æ«ï¿½ï¿½Öµ
 uint16_t Slider_Val = 0;
 
 
 
 
-//³õÊ¼»¯Ö÷Ò³
+//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ò³
 void Init_Homepage()
 {
 	FRESULT rc;
-	ScuGic_Init();	//³õÊ¼»¯Í¨ÓÃÖÐ¶Ï¿ØÖÆÆ÷
-	LCD_Init();		//LCD³õÊ¼»¯
-	GT9147_Init();	//GT9147³õÊ¼»¯
-	//¶¨Ê±Æ÷³õÊ¼»¯£¬Ã¿10ms´¥·¢Ò»´Î
+	ScuGic_Init();	//ï¿½ï¿½Ê¼ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Ð¶Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½
+	LCD_Init();		//LCDï¿½ï¿½Ê¼ï¿½ï¿½
+	GT9147_Init();	//GT9147ï¿½ï¿½Ê¼ï¿½ï¿½
+	//ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ã¿10msï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
 	ScuTimer_Int_Init(10000);
-	//DMA³õÊ¼»¯£¬´øÖÐ¶Ï¹¦ÄÜ
+	//DMAï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï¹ï¿½ï¿½ï¿½
 	AXI_DMA_Init(&AxiDma0,XPAR_AXIDMA_0_DEVICE_ID);
 	AXI_DMA_RxInt_Init(&AxiDma0,XPAR_FABRIC_AXI_DMA_0_S2MM_INTROUT_INTR,AXI_DMARx_IRQHandler);
 
-    rc = f_mount(&fatfs, "0:/", 0);		//¹ÒÔØSD¿¨
+    rc = f_mount(&fatfs, "0:/", 0);		//ï¿½ï¿½ï¿½ï¿½SDï¿½ï¿½
     if (rc != FR_OK) {
-    	printf("Mount Failed!\n");		//Èô¹ÒÔØÊ§°ÜÔò·¢³ö¾¯¸æ
+    	printf("Mount Failed!\n");		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½ï¿½ò·¢³ï¿½ï¿½ï¿½ï¿½ï¿½
     }
 
-	//GPIO¼°GPIOÖÐ¶Ï³õÊ¼»¯
+	//GPIOï¿½ï¿½GPIOï¿½Ð¶Ï³ï¿½Ê¼ï¿½ï¿½
 	PS_GPIO_Init();
 	PS_GPIO_Int_Init(PS_GPIO_IRQ_Handler);
 	PS_GPIO_SetInt(47,XGPIOPS_IRQ_TYPE_EDGE_FALLING);
 
-	LCD_Clear(LCD_BLACK);	//ÉèÖÃÕûÌå±³¾°ÎªºÚÉ«
-	POINT_COLOR = LCD_WHITE;//±Ê»­Éè¶¨Îª°×É«
-	BACK_COLOR = LCD_BLACK;	//±Ê»­±³¾°Éè¶¨ÎªºÚÉ«
+	LCD_Clear(LCD_BLACK);	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å±³ï¿½ï¿½Îªï¿½ï¿½É«
+	POINT_COLOR = LCD_WHITE;//ï¿½Ê»ï¿½ï¿½è¶¨Îªï¿½ï¿½É«
+	BACK_COLOR = LCD_BLACK;	//ï¿½Ê»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è¶¨Îªï¿½ï¿½É«
 
-	LCD_ShowString(3,20,180,16,16,0,(uint8_t*)"www.corecourse.cn");//ÏÔÊ¾ÍøÖ·
-	LCD_DisplayPic(20,50,gImage_logo);//»­LOGO
+	LCD_ShowString(3,20,180,16,16,0,(uint8_t*)"OMP BY NORMAN (WIP) Basedon Xiaomeige");//ï¿½ï¿½Ê¾ï¿½ï¿½Ö·
+	LCD_DisplayPic(20,50,gImage_logo);//ï¿½ï¿½LOGO
 
 	Draw_Box(ADC_Wave.Window, LCD_WHITE, 0);
 	Get_Waveform_Window_Parameters(&ADC_Wave);
@@ -81,16 +81,16 @@ void Init_Homepage()
 	sprintf(str,"%dKHz",(int)Sample_Rate[Sample_Set]);
 	Draw_Normal_Text(Text_SAMPLE, str);
 
-	//ÏÈ°ÑADCÊý¾ÝËù´¦µÄÄÚ´æÇåÁã
+	//ï¿½È°ï¿½ADCï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½
 	memset(P_ADC_Data,0,ADC_DATA_LENGTH*2);
 
-	//ÏÈ²É¼¯Ò»´Î
+	//ï¿½È²É¼ï¿½Ò»ï¿½ï¿½
 	Set_ADC_Mode(CH_Set, Sample_Rate[Sample_Set], Trigger_Value, Trigger_Mode);
-	//DMA´«Êä
+	//DMAï¿½ï¿½ï¿½ï¿½
 	XAxiDma_SimpleTransfer(&AxiDma0,(UINTPTR) P_ADC_Data,
 			ADC_DATA_LENGTH*2, XAXIDMA_DEVICE_TO_DMA);
-	Measure_Point = ADC_Wave.Wave_Area.X1 + ADC_Wave.Wave_Area.Width/2;		//²âÁ¿µãÎªYÖáÏß
-	Trigger_Point = ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height/2;	//´¥·¢µãÎªXÖáÏß
+	Measure_Point = ADC_Wave.Wave_Area.X1 + ADC_Wave.Wave_Area.Width/2;		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªYï¿½ï¿½ï¿½ï¿½
+	Trigger_Point = ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height/2;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªXï¿½ï¿½ï¿½ï¿½
 }
 void Refresh_Measure_Val()
 {
@@ -103,7 +103,7 @@ void Refresh_Measure_Val()
 	sprintf(str,"Freq = %luHz",Get_ADC_Freq());
 	Draw_Normal_Text(Text_Freq, str);
 
-	if(Trigger_Mode == 0) {	//Èç¹ûÊÇAuto_TriggerÔòË¢ÐÂµçÑ¹ÖÐÖµ
+	if(Trigger_Mode == 0) {	//ï¿½ï¿½ï¿½ï¿½ï¿½Auto_Triggerï¿½ï¿½Ë¢ï¿½Âµï¿½Ñ¹ï¿½ï¿½Öµ
 		sprintf(str,"%.3fV",Get_ADC_Vmid());
 		strcpy(Button_TriggerVal.Text[0],str);
 		Draw_Normal_Button(Button_TriggerVal);
@@ -112,19 +112,19 @@ void Refresh_Measure_Val()
 void Touch_Scan()
 {
 	uint8_t i;
-	uint32_t Freq;	//ÆµÂÊ
-	uint8_t Wave_Density = 4;	//°´ÏÂAutoºóµÄÒ³Ãæ×îÓÅ²¨ÐÎÃÜ¶È
-	GT9147_Scan(&Touch_LCD);	//´¥ÃþÉ¨Ãè
-	if(Touch_LCD.Touched) {		//Èç¹û°´¼ü°´ÏÂ
+	uint32_t Freq;	//Æµï¿½ï¿½
+	uint8_t Wave_Density = 4;	//ï¿½ï¿½ï¿½ï¿½Autoï¿½ï¿½ï¿½Ò³ï¿½ï¿½ï¿½ï¿½ï¿½Å²ï¿½ï¿½ï¿½ï¿½Ü¶ï¿½
+	GT9147_Scan(&Touch_LCD);	//ï¿½ï¿½ï¿½ï¿½É¨ï¿½ï¿½
+	if(Touch_LCD.Touched) {		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(!Single_TriggerFlag) {
-			if(Judge_TpXY(Touch_LCD,Button_RUN.Box)) {		//RUN°´¼ü
+			if(Judge_TpXY(Touch_LCD,Button_RUN.Box)) {		//RUNï¿½ï¿½ï¿½ï¿½
 				Draw_Button_Effect(Button_RUN);
 			} else {
 				Draw_Normal_Button(Button_RUN);
 			}
 		}
 
-		if(Judge_TpXY(Touch_LCD,Button_AUTO.Box)) {		//AUTO°´¼ü
+		if(Judge_TpXY(Touch_LCD,Button_AUTO.Box)) {		//AUTOï¿½ï¿½ï¿½ï¿½
 			Draw_Button_Effect(Button_AUTO);
 		} else {
 			Button_AUTO.BackColor = LCD_GREEN;
@@ -132,44 +132,44 @@ void Touch_Scan()
 		}
 
 		if(Wave_Run && (!Single_TriggerFlag)) {
-			if(Judge_TpXY(Touch_LCD,Button_CH_INC.Box)) {	//CH_INC°´¼ü
+			if(Judge_TpXY(Touch_LCD,Button_CH_INC.Box)) {	//CH_INCï¿½ï¿½ï¿½ï¿½
 				Draw_Button_Effect(Button_CH_INC);
 			} else {
 				Draw_Normal_Button(Button_CH_INC);
 			}
 
-			if(Judge_TpXY(Touch_LCD,Button_CH_DEC.Box)) {	//CH_DEC°´¼ü
+			if(Judge_TpXY(Touch_LCD,Button_CH_DEC.Box)) {	//CH_DECï¿½ï¿½ï¿½ï¿½
 				Draw_Button_Effect(Button_CH_DEC);
 			} else {
 				Draw_Normal_Button(Button_CH_DEC);
 			}
 
-			if(Judge_TpXY(Touch_LCD,Button_SA_INC.Box)) {	//SA_INC°´¼ü
+			if(Judge_TpXY(Touch_LCD,Button_SA_INC.Box)) {	//SA_INCï¿½ï¿½ï¿½ï¿½
 				Draw_Button_Effect(Button_SA_INC);
 			} else {
 				Draw_Normal_Button(Button_SA_INC);
 			}
 
-			if(Judge_TpXY(Touch_LCD,Button_SA_DEC.Box)) {	//SA_DEC°´¼ü
+			if(Judge_TpXY(Touch_LCD,Button_SA_DEC.Box)) {	//SA_DECï¿½ï¿½ï¿½ï¿½
 				Draw_Button_Effect(Button_SA_DEC);
 			} else {
 				Draw_Normal_Button(Button_SA_DEC);
 			}
 
-			if(Judge_TpXY(Touch_LCD,Button_Tri_Mode.Box)) {	//Tri_Mode°´¼ü
+			if(Judge_TpXY(Touch_LCD,Button_Tri_Mode.Box)) {	//Tri_Modeï¿½ï¿½ï¿½ï¿½
 				Draw_Button_Effect(Button_Tri_Mode);
 			} else {
 				Draw_Normal_Button(Button_Tri_Mode);
 			}
 
-			if((Trigger_Mode==0x03)&&Judge_TpXY(Touch_LCD,Button_TriggerVal.Box)) {//TriggerVal°´¼ü
+			if((Trigger_Mode==0x03)&&Judge_TpXY(Touch_LCD,Button_TriggerVal.Box)) {//TriggerValï¿½ï¿½ï¿½ï¿½
 				Draw_Button_Effect(Button_TriggerVal);
 			} else {
 
 			}
 		}
 
-		if(Judge_TpXY(Touch_LCD,Wave_Slider.Box)) { //»¬¶¯²¨ÐÎµÄ»¬¿é
+		if(Judge_TpXY(Touch_LCD,Wave_Slider.Box)) { //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎµÄ»ï¿½ï¿½ï¿½
 			if(Touch_LCD.Tp_X[0] <= Wave_Slider.Box.X1 + 20)
 				Slider_Val = 0;
 			else if(Touch_LCD.Tp_X[0] >= Wave_Slider.Box.X1 + Wave_Slider.Box.Width - 20)
@@ -184,9 +184,9 @@ void Touch_Scan()
 		}
 
 
-		if(Judge_TpXY(Touch_LCD,ADC_Wave.Window) && (!Single_TriggerFlag)) {	//²¨ÐÎ´°¿Ú
+		if(Judge_TpXY(Touch_LCD,ADC_Wave.Window) && (!Single_TriggerFlag)) {	//ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½
 			if((1)&&(Wave_Run)&&(!Trigger_Mode)&&
-					(Judge_Two_TpXY(Touch_LCD,ADC_Wave.Wave_Area)))//Á½Ö¸´¥Ãþ
+					(Judge_Two_TpXY(Touch_LCD,ADC_Wave.Wave_Area)))//ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½
 			{
 				Sample_Set_Last = Sample_Set;
 				if((Touch_LCD.Tp_X[1] > Touch_LCD.Tp_X[0]))
@@ -197,15 +197,15 @@ void Touch_Scan()
 					Sample_Set = 7;
 
 
-				//Èç¹û²ÉÑùÂÊ¸Ä±ä£¬ÔòÐÞ¸Ä²ÉÑù²ÎÊý
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¸Ä±ä£¬ï¿½ï¿½ï¿½Þ¸Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				if(Sample_Set_Last != Sample_Set)
 					Set_ADC_Mode(CH_Set, Sample_Rate[Sample_Set], Trigger_Value, Trigger_Mode);
 				sprintf(str,"%dKHz",(int)Sample_Rate[Sample_Set]);
 				Draw_Normal_Text(Text_SAMPLE, str);
-				Display_Time_Scale(ADC_Wave,Sample_Rate[Sample_Set]);//Ë¢ÐÂXÖáµÄÊ±¼ä¿Ì¶È
+				Display_Time_Scale(ADC_Wave,Sample_Rate[Sample_Set]);//Ë¢ï¿½ï¿½Xï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ì¶ï¿½
 			}
 			if(Wave_Run == 0) {
-				//³öÏÖÊú±êÏß£¬¿ÉÍÏ¶¯ÏÔÊ¾Ã¿Ò»µãµÄµçÑ¹ºÍÊ±¼ä
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß£ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½ï¿½ï¿½Ê¾Ã¿Ò»ï¿½ï¿½Äµï¿½Ñ¹ï¿½ï¿½Ê±ï¿½ï¿½
 				Measure_Point_Last = Measure_Point;
 				if(Touch_LCD.Tp_X[0] <= ADC_Wave.Wave_Area.X1)
 					Measure_Point = ADC_Wave.Wave_Area.X1;
@@ -213,38 +213,38 @@ void Touch_Scan()
 					Measure_Point = ADC_Wave.Wave_Area.X1 + ADC_Wave.Wave_Area.Width;
 				else if(Touch_LCD.Tp_X[0] > ADC_Wave.Wave_Area.X1 &&
 						Touch_LCD.Tp_X[0] < ADC_Wave.Wave_Area.X1 + ADC_Wave.Wave_Area.Width)
-					Measure_Point = Touch_LCD.Tp_X[0]/5*5;	//½«²âÁ¿µãµÄX×ø±ê±äÎª5µÄ±¶ÊýÖµ
+					Measure_Point = Touch_LCD.Tp_X[0]/5*5;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Îª5ï¿½Ä±ï¿½ï¿½ï¿½Öµ
 
-				//²ÁµôÉÏÒ»´ÎµÄ±êÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ÎµÄ±ï¿½ï¿½ï¿½
 				if(Measure_Point_Last != Measure_Point)
 				Draw_Mark_Line(1,Measure_Point_Last, ADC_Wave.Wave_Area.Y1,
 						ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height,PAGE_COLOR);
 
 			} else if(Trigger_Mode != 0){
-				//»æÖÆ´¥·¢µçÑ¹µÄ¹â±ê
-				Trigger_Point_Last = Trigger_Point;//¼ÇÂ¼ÉÏÒ»¸ö±êÏßÎ»ÖÃ
+				//ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½Ä¹ï¿½ï¿½
+				Trigger_Point_Last = Trigger_Point;//ï¿½ï¿½Â¼ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
 				if(Touch_LCD.Tp_Y[0] <= ADC_Wave.Wave_Area.Y1)
 					Trigger_Point = ADC_Wave.Wave_Area.Y1;
 				else if(Touch_LCD.Tp_Y[0] >= ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height)
 					Trigger_Point = ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height;
 				else if(Touch_LCD.Tp_Y[0] > ADC_Wave.Wave_Area.Y1 &&
 						Touch_LCD.Tp_Y[0] < ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height)
-					Trigger_Point = Touch_LCD.Tp_Y[0]/1*1;	//½«´¥·¢µãµÄY×ø±ê±äÎª2µÄ±¶ÊýÖµ
+					Trigger_Point = Touch_LCD.Tp_Y[0]/1*1;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½Îª2ï¿½Ä±ï¿½ï¿½ï¿½Öµ
 
-				//²Á¾É±êÏß
+				//ï¿½ï¿½ï¿½É±ï¿½ï¿½ï¿½
 				if(Trigger_Point_Last != Trigger_Point)
 				Draw_Mark_Line(0,Trigger_Point_Last, ADC_Wave.Wave_Area.X1,
 						ADC_Wave.Wave_Area.X1 + ADC_Wave.Wave_Area.Width,PAGE_COLOR);
 
 				Trigger_Value_Last = Trigger_Value;
-				//¼ÆËã´¥·¢Öµ
+				//ï¿½ï¿½ï¿½ã´¥ï¿½ï¿½Öµ
 				Trigger_Value = ((ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height/2
 						- Trigger_Point)/ADC_Wave.Precision);
 
-				//Èç¹û´¥·¢Öµ±»ÐÞ¸Ä£¬ÔòÖØÅäÖÃ²ÉÑù²ÎÊý
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Þ¸Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				if(Trigger_Value_Last != Trigger_Value)
 					Set_ADC_Mode(CH_Set, Sample_Rate[Sample_Set], Trigger_Value, Trigger_Mode);
-				//Ë¢ÐÂ´¥·¢µçÑ¹ÏÔÊ¾
+				//Ë¢ï¿½Â´ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½Ê¾
 				sprintf(str,"%.3fV",Trigger_Value*5.0/32768);
 				strcpy(Button_TriggerVal.Text[0],str);
 				Draw_Normal_Button(Button_TriggerVal);
@@ -255,29 +255,29 @@ void Touch_Scan()
 		}
 
 	} else {
-		if(Touch_LCD.Touched_Last) {	//Èç¹û±¾´ÎÎ´°´µ«ÊÇÉÏ´Î°´ÁË£¬±íÊ¾ËÉÊÖ
-			if(Judge_TpXY(Touch_LCD,Button_RUN.Box) && (!Single_TriggerFlag)) {		//RUN°´¼ü
+		if(Touch_LCD.Touched_Last) {	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï´Î°ï¿½ï¿½Ë£ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
+			if(Judge_TpXY(Touch_LCD,Button_RUN.Box) && (!Single_TriggerFlag)) {		//RUNï¿½ï¿½ï¿½ï¿½
 				if(Wave_Run) {
-					//½øÈëSTOPÄ£Ê½
+					//ï¿½ï¿½ï¿½ï¿½STOPÄ£Ê½
 					Perform_STOP();
 				} else {
 					Wave_Run = 1;
 					Button_RUN.BackColor = LCD_GREEN;
 					Button_RUN.TextColor = LCD_BLACK;
 					strcpy(Button_RUN.Text[0],"RUN");
-					//²Áµôµ±Ç°µÄ±êÏß
+					//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½Ä±ï¿½ï¿½ï¿½
 					Draw_Mark_Line(1,Measure_Point, ADC_Wave.Wave_Area.Y1,
 							ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height,PAGE_COLOR);
-					//²ÁµôÎÄ±¾
+					//ï¿½ï¿½ï¿½ï¿½ï¿½Ä±ï¿½
 					Fill_Box(Text_Point_V.Box,Text_Point_V.BackColor,0);
 					Fill_Box(Text_Point_T.Box,Text_Point_T.BackColor,0);
 
-					STOP_Ensable_Press();//½â³ýÔÚSTOP×´Ì¬ÏÂ±»¶³½áµÄ²Ù×÷
+					STOP_Ensable_Press();//ï¿½ï¿½ï¿½ï¿½ï¿½STOP×´Ì¬ï¿½Â±ï¿½ï¿½ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½
 				}
 				Draw_Normal_Button(Button_RUN);
 			}
-			if(Judge_TpXY(Touch_LCD,Button_AUTO.Box)) {		//AUTO°´¼ü
-				Set_ADC_Mode(CH_Set, Sample_Rate[7], 0, 0);//¿ªÆô×î´ó²ÉÑùÂÊ²¢²É¼¯Ò»´Î
+			if(Judge_TpXY(Touch_LCD,Button_AUTO.Box)) {		//AUTOï¿½ï¿½ï¿½ï¿½
+				Set_ADC_Mode(CH_Set, Sample_Rate[7], 0, 0);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê²ï¿½ï¿½É¼ï¿½Ò»ï¿½ï¿½
 				if(Single_TriggerFlag)
 					Cancel_Trigger = 1;
 				Button_AUTO.BackColor = LCD_RED;
@@ -304,26 +304,26 @@ void Touch_Scan()
 				}
 				sprintf(str,"%dKHz",(int)Sample_Rate[Sample_Set]);
 				Draw_Normal_Text(Text_SAMPLE, str);
-				Display_Time_Scale(ADC_Wave,Sample_Rate[Sample_Set]);	//Ë¢ÐÂXÖáµÄÊ±¼ä¿Ì¶È
-				//Æô¶¯RUN
+				Display_Time_Scale(ADC_Wave,Sample_Rate[Sample_Set]);	//Ë¢ï¿½ï¿½Xï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ì¶ï¿½
+				//ï¿½ï¿½ï¿½ï¿½RUN
 				Wave_Run = 1;
 				Button_RUN.BackColor = LCD_GREEN;
 				Button_RUN.TextColor = LCD_BLACK;
 				strcpy(Button_RUN.Text[0],"RUN");
 				Draw_Normal_Button(Button_RUN);
-				//²ÁµôÊú±êÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				Draw_Mark_Line(1,Measure_Point, ADC_Wave.Wave_Area.Y1,
 						ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height,PAGE_COLOR);
-				//²Á³ýºá±êÏß
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				Draw_Mark_Line(0,Trigger_Point, ADC_Wave.Wave_Area.X1,
 						ADC_Wave.Wave_Area.X1 + ADC_Wave.Wave_Area.Width,PAGE_COLOR);
-				//²ÁµôÎÄ±¾
+				//ï¿½ï¿½ï¿½ï¿½ï¿½Ä±ï¿½
 				Fill_Box(Text_Point_V.Box,Text_Point_V.BackColor,0);
 				Fill_Box(Text_Point_T.Box,Text_Point_T.BackColor,0);
 
-				STOP_Ensable_Press();//½â³ýÔÚSTOP×´Ì¬ÏÂ±»¶³½áµÄ²Ù×÷
+				STOP_Ensable_Press();//ï¿½ï¿½ï¿½ï¿½ï¿½STOP×´Ì¬ï¿½Â±ï¿½ï¿½ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½
 
-				//ÇÐ»»Îª×Ô¶¯´¥·¢Ä£Ê½
+				//ï¿½Ð»ï¿½Îªï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½
 				Trigger_Mode = 0;
 				strcpy(Button_Tri_Mode.Text[0],"Auto");
 				Draw_Normal_Button(Button_Tri_Mode);
@@ -334,69 +334,69 @@ void Touch_Scan()
 
 			if(Wave_Run) {
 				if(!Single_TriggerFlag) {
-					if(Judge_TpXY(Touch_LCD,Button_CH_INC.Box)) {	//CH_INC°´¼ü
+					if(Judge_TpXY(Touch_LCD,Button_CH_INC.Box)) {	//CH_INCï¿½ï¿½ï¿½ï¿½
 						Draw_Normal_Button(Button_CH_INC);
 						if(CH_Set < 7)
 							CH_Set++;
 						else
 							CH_Set = 0;
-						//ÐÞ¸Ä²ÉÑù²ÎÊý
+						//ï¿½Þ¸Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 						Set_ADC_Mode(CH_Set, Sample_Rate[Sample_Set], Trigger_Value, Trigger_Mode);
 						sprintf(str,"CH%d",CH_Set);
-						Draw_Normal_Text(Text_CHANNEL, str);	//¸üÐÂÍ¨µÀÏÔÊ¾
+						Draw_Normal_Text(Text_CHANNEL, str);	//ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Ê¾
 					}
-					if(Judge_TpXY(Touch_LCD,Button_CH_DEC.Box)) {	//CH_DEC°´¼ü
+					if(Judge_TpXY(Touch_LCD,Button_CH_DEC.Box)) {	//CH_DECï¿½ï¿½ï¿½ï¿½
 						Draw_Normal_Button(Button_CH_DEC);
 						if(CH_Set > 0)
 							CH_Set--;
 						else
 							CH_Set = 7;
-						//ÐÞ¸Ä²ÉÑù²ÎÊý
+						//ï¿½Þ¸Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 						Set_ADC_Mode(CH_Set, Sample_Rate[Sample_Set], Trigger_Value, Trigger_Mode);
 						sprintf(str,"CH%d",CH_Set);
-						Draw_Normal_Text(Text_CHANNEL, str);	//¸üÐÂÍ¨µÀÏÔÊ¾
+						Draw_Normal_Text(Text_CHANNEL, str);	//ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Ê¾
 					}
-					if(Judge_TpXY(Touch_LCD,Button_SA_INC.Box)) {	//SA_INC°´¼ü
+					if(Judge_TpXY(Touch_LCD,Button_SA_INC.Box)) {	//SA_INCï¿½ï¿½ï¿½ï¿½
 						Draw_Normal_Button(Button_SA_INC);
 						if(Sample_Set < 7)
 							Sample_Set++;
-						//ÐÞ¸Ä²ÉÑù²ÎÊý
+						//ï¿½Þ¸Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 						Set_ADC_Mode(CH_Set, Sample_Rate[Sample_Set], Trigger_Value, Trigger_Mode);
 						sprintf(str,"%dKHz",(int)Sample_Rate[Sample_Set]);
 						Draw_Normal_Text(Text_SAMPLE, str);
-						Display_Time_Scale(ADC_Wave,Sample_Rate[Sample_Set]);//Ë¢ÐÂXÖáµÄÊ±¼ä¿Ì¶È
+						Display_Time_Scale(ADC_Wave,Sample_Rate[Sample_Set]);//Ë¢ï¿½ï¿½Xï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ì¶ï¿½
 					}
-					if(Judge_TpXY(Touch_LCD,Button_SA_DEC.Box)) {	//SA_DEC°´¼ü
+					if(Judge_TpXY(Touch_LCD,Button_SA_DEC.Box)) {	//SA_DECï¿½ï¿½ï¿½ï¿½
 						Draw_Normal_Button(Button_SA_DEC);
 						if(Sample_Set > 0)
 							Sample_Set--;
-						//ÐÞ¸Ä²ÉÑù²ÎÊý
+						//ï¿½Þ¸Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 						Set_ADC_Mode(CH_Set, Sample_Rate[Sample_Set], Trigger_Value, Trigger_Mode);
 						sprintf(str,"%dKHz",(int)Sample_Rate[Sample_Set]);
 						Draw_Normal_Text(Text_SAMPLE, str);
-						Display_Time_Scale(ADC_Wave,Sample_Rate[Sample_Set]);//Ë¢ÐÂXÖáµÄÊ±¼ä¿Ì¶È
+						Display_Time_Scale(ADC_Wave,Sample_Rate[Sample_Set]);//Ë¢ï¿½ï¿½Xï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ì¶ï¿½
 					}
-					if(Judge_TpXY(Touch_LCD,Button_Tri_Mode.Box)) {	//Tri_Mode°´¼ü
+					if(Judge_TpXY(Touch_LCD,Button_Tri_Mode.Box)) {	//Tri_Modeï¿½ï¿½ï¿½ï¿½
 						if(Trigger_Mode == 0x00) {
-							Trigger_Mode = 0x01;	//0x01ÎªÊÖ¶¯´¥·¢
+							Trigger_Mode = 0x01;	//0x01Îªï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 							strcpy(Button_Tri_Mode.Text[0],"Normal");
 							Button_TriggerVal.TextColor = LCD_BLACK;
 							Button_TriggerVal.BackColor = LCD_ORANGE;
 						} else if(Trigger_Mode == 0x01) {
-							Trigger_Mode = 0x03;	//0x03Îªµ¥´Î´¥·¢
+							Trigger_Mode = 0x03;	//0x03Îªï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½
 							strcpy(Button_Tri_Mode.Text[0],"Single");
 							Button_TriggerVal.TextColor = LCD_BLACK;
 							Button_TriggerVal.BackColor = LCD_GREEN;
 						} else {
-							Trigger_Mode = 0x00;	//0x00Îª×Ô¶¯´¥·¢
+							Trigger_Mode = 0x00;	//0x00Îªï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
 							strcpy(Button_Tri_Mode.Text[0],"Auto");
 							Button_TriggerVal.TextColor = LCD_WHITE;
 							Button_TriggerVal.BackColor = LCD_GRAY;
-							//Çå³ý´¥·¢µçÑ¹µÄ¹â±ê
+							//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½Ä¹ï¿½ï¿½
 							Draw_Mark_Line(0,Trigger_Point, ADC_Wave.Wave_Area.X1,
 									ADC_Wave.Wave_Area.X1 + ADC_Wave.Wave_Area.Width,PAGE_COLOR);
 						}
-						//ÐÞ¸Ä²ÉÑù²ÎÊý
+						//ï¿½Þ¸Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 						Set_ADC_Mode(CH_Set, Sample_Rate[Sample_Set], Trigger_Value, Trigger_Mode);
 						Draw_Normal_Button(Button_Tri_Mode);
 						sprintf(str,"%.3fV",Trigger_Value*5.0/32768);
@@ -404,8 +404,8 @@ void Touch_Scan()
 						Draw_Normal_Button(Button_TriggerVal);
 					}
 				}
-				if((Trigger_Mode==0x03)&&Judge_TpXY(Touch_LCD,Button_TriggerVal.Box)) {//TriggerVal°´¼ü
-					//ÐÞ¸Ä²ÉÑù²ÎÊý
+				if((Trigger_Mode==0x03)&&Judge_TpXY(Touch_LCD,Button_TriggerVal.Box)) {//TriggerValï¿½ï¿½ï¿½ï¿½
+					//ï¿½Þ¸Ä²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					Set_ADC_Mode(CH_Set, Sample_Rate[Sample_Set], Trigger_Value, Trigger_Mode);
 					if(Single_TriggerFlag)
 						Cancel_Trigger = 1;
@@ -423,7 +423,7 @@ void Touch_Scan()
 
 
 
-//½ûÖ¹ÔÚSTOP×´Ì¬Ö´ÐÐµÄÒ»Ð©²Ù×÷
+//ï¿½ï¿½Ö¹ï¿½ï¿½STOP×´Ì¬Ö´ï¿½Ðµï¿½Ò»Ð©ï¿½ï¿½ï¿½ï¿½
 void STOP_Disable_Press()
 {
 	Button_CH_INC.BackColor = LCD_GRAY;
@@ -440,7 +440,7 @@ void STOP_Disable_Press()
 	Draw_Normal_Button(Button_TriggerVal);
 }
 
-//½â³ýÔÚSTOP×´Ì¬ÏÂ±»¶³½áµÄ²Ù×÷
+//ï¿½ï¿½ï¿½ï¿½ï¿½STOP×´Ì¬ï¿½Â±ï¿½ï¿½ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½
 void STOP_Ensable_Press()
 {
 	Button_CH_INC.BackColor = LCD_BLACK;
@@ -462,34 +462,34 @@ void STOP_Ensable_Press()
 	Draw_Normal_Button(Button_TriggerVal);
 }
 
-//Ö´ÐÐSTOP²Ù×÷
+//Ö´ï¿½ï¿½STOPï¿½ï¿½ï¿½ï¿½
 void Perform_STOP()
 {
 	Wave_Run = 0;
 
-	//°´¼ü±äÎªSTOPÄ£Ê½
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªSTOPÄ£Ê½
 	Button_RUN.BackColor = LCD_RED;
 	Button_RUN.TextColor = LCD_WHITE;
 	strcpy(Button_RUN.Text[0],"STOP");
 	Draw_Normal_Button(Button_RUN);
 
-	//²Áºá±êÏß
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	Draw_Mark_Line(0,Trigger_Point, ADC_Wave.Wave_Area.X1,
 			ADC_Wave.Wave_Area.X1 + ADC_Wave.Wave_Area.Width,PAGE_COLOR);
 
-	//Ê¹STOP½ûÖ¹µÄ²Ù×÷°´Å¥Îª»ÒÉ«²»¿É´¥
+	//Ê¹STOPï¿½ï¿½Ö¹ï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Å¥Îªï¿½ï¿½É«ï¿½ï¿½ï¿½É´ï¿½
 	STOP_Disable_Press();
 }
 
-//´ÓDDRÖÐ¶ÁÈ¡²¨ÐÎÊý¾Ý
+//ï¿½ï¿½DDRï¿½Ð¶ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void Read_Wave_Data()
 {
-	memcpy(Pre_Wave_Data,Wave_Data,ADC_DATA_LENGTH*2);	//±£´æÉÏ´ÎµÄ²¨ÐÎÖµ
+	memcpy(Pre_Wave_Data,Wave_Data,ADC_DATA_LENGTH*2);	//ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ÎµÄ²ï¿½ï¿½ï¿½Öµ
 	memcpy(Wave_Data,P_ADC_Data + ADC_Wave_Offset,
-			(ADC_DATA_LENGTH - ADC_Wave_Offset)*2);//´ÓDDR¶ÁÈ¡ÐèÒªµÄ²¨ÐÎÖµ
+			(ADC_DATA_LENGTH - ADC_Wave_Offset)*2);//ï¿½ï¿½DDRï¿½ï¿½È¡ï¿½ï¿½Òªï¿½Ä²ï¿½ï¿½ï¿½Öµ
 }
 
-//Ê¹µ¥´Î´¥·¢Ê±½ûÖ¹µÄ²Ù×÷°´Å¥Îª»ÒÉ«²»¿É´¥
+//Ê¹ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ö¹ï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Å¥Îªï¿½ï¿½É«ï¿½ï¿½ï¿½É´ï¿½
 void Trigger_Disable_Press()
 {
 	Button_RUN.BackColor = LCD_GRAY;
@@ -507,7 +507,7 @@ void Trigger_Disable_Press()
 	Draw_Normal_Button(Button_Tri_Mode);
 }
 
-//»Ö¸´µ¥´Î´¥·¢½ûÖ¹µÄ²Ù×÷°´Å¥
+//ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½Ö¹ï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Å¥
 void Trigger_Enable_Press()
 {
 	Button_RUN.BackColor = LCD_GREEN;
@@ -527,19 +527,19 @@ void Trigger_Enable_Press()
 }
 void Refresh_WaveWindow()
 {
-	Read_Wave_Data();//¶Á²¨ÐÎÊý¾Ý
-	Draw_Waveform(ADC_Wave,Pre_Wave_Data,Wave_Data);	//»­²¨ÐÎ
+	Read_Wave_Data();//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	Draw_Waveform(ADC_Wave,Pre_Wave_Data,Wave_Data);	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if(Wave_Run) {
 		if(Trigger_Mode)
-			//»­ºá±êÏß
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			Draw_Mark_Line(0,Trigger_Point, ADC_Wave.Wave_Area.X1,
 					ADC_Wave.Wave_Area.X1 + ADC_Wave.Wave_Area.Width,LCD_ORANGE);
 	} else if(!Wave_Run) {
-		//»­Êú±êÏß
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		Draw_Mark_Line(1,Measure_Point, ADC_Wave.Wave_Area.Y1,
 				ADC_Wave.Wave_Area.Y1 + ADC_Wave.Wave_Area.Height,LCD_CYAN);
 
-		//Ë¢ÐÂµçÑ¹ÏÔÊ¾
+		//Ë¢ï¿½Âµï¿½Ñ¹ï¿½ï¿½Ê¾
 		Point_Voltage = Wave_Data[Measure_Point - ADC_Wave.Wave_Area.X1]*5.0/32768;
 		if(Point_Voltage >= 0)
 			sprintf(str,"Voltage = +%.3fV",Point_Voltage);
@@ -547,7 +547,7 @@ void Refresh_WaveWindow()
 			sprintf(str,"Voltage = %.3fV",Point_Voltage);
 		Draw_Normal_Text(Text_Point_V, str);
 
-		//Ë¢ÐÂÊ±¼äÏÔÊ¾
+		//Ë¢ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ê¾
 		Point_Time = (float)((Measure_Point - ADC_Wave.Wave_Area.X1)-250)/Sample_Rate[Sample_Set];
 		if(Point_Time >= 0)
 			sprintf(str,"Time = +%.3fms",Point_Time);
@@ -559,9 +559,9 @@ void Refresh_WaveWindow()
 
 void Handle_Single_Trigger()
 {
-	Xil_DCacheFlushRange((UINTPTR)P_ADC_Data,ADC_DATA_LENGTH*2);//Ë¢ÐÂDDRÀïµÄADCÊý¾Ý
+	Xil_DCacheFlushRange((UINTPTR)P_ADC_Data,ADC_DATA_LENGTH*2);//Ë¢ï¿½ï¿½DDRï¿½ï¿½ï¿½ADCï¿½ï¿½ï¿½ï¿½
 
-	//°´Å¥»Ö¸´Ô­É«
+	//ï¿½ï¿½Å¥ï¿½Ö¸ï¿½Ô­É«
 	if(Trigger_Mode == 0x03) {
 		Button_TriggerVal.TextColor = LCD_BLACK;
 		Button_TriggerVal.BackColor = LCD_GREEN;
@@ -573,17 +573,17 @@ void Handle_Single_Trigger()
 
 	Trigger_Enable_Press();
 
-	if(!Cancel_Trigger)//´¥·¢È¡ÏûÔò²»ÔÙSTOP
-		Perform_STOP();//Ö´ÐÐSTOP²Ù×÷
-	Cancel_Trigger = 0;		//Çå±êÖ¾
+	if(!Cancel_Trigger)//ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½STOP
+		Perform_STOP();//Ö´ï¿½ï¿½STOPï¿½ï¿½ï¿½ï¿½
+	Cancel_Trigger = 0;		//ï¿½ï¿½ï¿½Ö¾
 }
 void Handle_Round_Done()
 {
 	RxDone = 0;
-	Xil_DCacheFlushRange((UINTPTR)P_ADC_Data,ADC_DATA_LENGTH*2);//Ë¢ÐÂDDRÀïµÄADCÊý¾Ý
-	//¿ªÆôÏÂÒ»´Î´«Êä
+	Xil_DCacheFlushRange((UINTPTR)P_ADC_Data,ADC_DATA_LENGTH*2);//Ë¢ï¿½ï¿½DDRï¿½ï¿½ï¿½ADCï¿½ï¿½ï¿½ï¿½
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î´ï¿½ï¿½ï¿½
 	Set_ADC_Mode(CH_Set, Sample_Rate[Sample_Set], Trigger_Value, Trigger_Mode);
-	//DMA´«Êä
+	//DMAï¿½ï¿½ï¿½ï¿½
 	XAxiDma_SimpleTransfer(&AxiDma0,(UINTPTR) P_ADC_Data,
 			ADC_DATA_LENGTH*2, XAXIDMA_DEVICE_TO_DMA);
 
