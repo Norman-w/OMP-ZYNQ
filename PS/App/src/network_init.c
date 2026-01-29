@@ -267,109 +267,35 @@ struct netif* network_get_netif(void)
 }
 
 /**
- * @brief ICMP ping接收回调函数
+ * @brief 简单的网络状态检测（检查链路状态和IP配置）
+ * @return 0=网络正常, -1=网络异常
  */
-static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
+static int network_status_check(void)
 {
-    struct icmp_echo_hdr *iecho;
-    u8_t icmp_type;
-    
-    if (p->tot_len < (IP_HLEN + sizeof(struct icmp_echo_hdr))) {
-        pbuf_free(p);
-        return 0;
+    if (g_netif == NULL) {
+        return -1;
     }
     
-    // 跳过IP头
-    if (pbuf_header(p, -IP_HLEN) != 0) {
-        pbuf_free(p);
-        return 0;
+    // 检查网络接口是否启用
+    if (!netif_is_up(g_netif)) {
+        return -1;
     }
     
-    iecho = (struct icmp_echo_hdr *)p->payload;
-    icmp_type = ICMPH_TYPE(iecho);
-    
-    // 检查是否是ICMP ECHO REPLY (类型0)
-    if (icmp_type == 0) {  // ICMP_ER (Echo Reply)
-        // 检查ID和序列号是否匹配
-        if ((iecho->id == PING_ID) && (iecho->seqno == htons(PING_SEQNO))) {
-            // Ping成功
-            g_ping_success_count++;
-            xil_printf("[NET] Ping %s 成功\n\r", NETWORK_MONITOR_TARGET_IP);
-            pbuf_free(p);
-            return 1;  // 吃掉这个包
-        }
+    // 检查链路状态（如果支持）
+    if (!netif_is_link_up(g_netif)) {
+        return -1;
     }
     
-    // 恢复IP头
-    pbuf_header(p, IP_HLEN);
-    pbuf_free(p);
+    // 检查IP地址是否配置
+    if (ip4_addr_get_u32(&g_netif->ip_addr) == 0) {
+        return -1;
+    }
+    
     return 0;
 }
 
 /**
- * @brief 发送ICMP ping请求
- * @return 0=成功, -1=失败
- */
-static int ping_send(void)
-{
-    struct pbuf *p;
-    struct icmp_echo_hdr *iecho;
-    size_t ping_size = 32;  // ping数据包大小
-    
-    if (g_ping_pcb == NULL || g_netif == NULL) {
-        return -1;
-    }
-    
-    // 检查网络接口是否就绪
-    if (!netif_is_up(g_netif) || !netif_is_link_up(g_netif)) {
-        return -1;
-    }
-    
-    // 分配pbuf
-    p = pbuf_alloc(PBUF_IP, ping_size, PBUF_RAM);
-    if (p == NULL) {
-        return -1;
-    }
-    
-    if (p->len < ping_size) {
-        pbuf_free(p);
-        return -1;
-    }
-    
-    // 填充ICMP echo请求
-    iecho = (struct icmp_echo_hdr *)p->payload;
-    ICMPH_TYPE_SET(iecho, ICMP_ECHO);  // ICMP_ECHO = 8
-    ICMPH_CODE_SET(iecho, 0);
-    iecho->chksum = 0;
-    iecho->id = PING_ID;
-    iecho->seqno = htons(PING_SEQNO);
-    
-    // 填充数据
-    size_t data_len = ping_size - sizeof(struct icmp_echo_hdr);
-    char *data_ptr = (char *)iecho + sizeof(struct icmp_echo_hdr);
-    for (size_t i = 0; i < data_len; i++) {
-        data_ptr[i] = (char)i;
-    }
-    
-    // 计算校验和
-    iecho->chksum = inet_chksum(iecho, ping_size);
-    
-    // 发送ping包
-    if (raw_sendto(g_ping_pcb, p, &g_ping_target) != ERR_OK) {
-        pbuf_free(p);
-        return -1;
-    }
-    
-    pbuf_free(p);
-    return 0;
-}
-
-// Ping参数定义
-#define PING_ID      0x1234
-#define PING_SEQNO   0x0001
-
-/**
- * @brief 初始化网络监测（ping功能）
+ * @brief 初始化网络监测（简化版：只检测链路状态）
  * @return 0=成功, -1=失败
  */
 int network_monitor_init(void)
@@ -378,22 +304,10 @@ int network_monitor_init(void)
         return -1;
     }
     
-    // 解析目标IP地址
+    // 解析目标IP地址（用于日志显示）
     if (ip4addr_aton(NETWORK_MONITOR_TARGET_IP, &g_ping_target) == 0) {
-        xil_printf("[NET] 错误: 监测目标IP地址格式无效: %s\n\r", NETWORK_MONITOR_TARGET_IP);
-        return -1;
+        xil_printf("[NET] 警告: 监测目标IP地址格式无效: %s\n\r", NETWORK_MONITOR_TARGET_IP);
     }
-    
-    // 创建RAW PCB用于ICMP
-    g_ping_pcb = raw_new(IP_PROTO_ICMP);
-    if (g_ping_pcb == NULL) {
-        xil_printf("[NET] 错误: 创建ICMP RAW PCB失败\n\r");
-        return -1;
-    }
-    
-    // 设置接收回调
-    raw_recv(g_ping_pcb, ping_recv, NULL);
-    raw_bind(g_ping_pcb, IP_ADDR_ANY);
     
     // 初始化计数器
     g_ping_counter = 0;
@@ -401,7 +315,8 @@ int network_monitor_init(void)
     g_ping_fail_count = 0;
     g_network_monitor_counter = 0;
     
-    xil_printf("[NET] 网络监测初始化完成，目标: %s\n\r", NETWORK_MONITOR_TARGET_IP);
+    xil_printf("[NET] 网络监测初始化完成（简化模式：检测链路状态）\n\r");
+    xil_printf("[NET] 监测目标: %s\n\r", NETWORK_MONITOR_TARGET_IP);
     return 0;
 }
 
