@@ -27,12 +27,13 @@ Thumbs.db
 *.swo
 *~
 
-# Vitis/Xilinx SDK 工作空间临时文件
-.metadata/
-.analytics/
-RemoteSystemsTempFiles/
-*.launch
-.settings/
+# Vitis/Xilinx SDK 工作空间临时文件（工作空间在PS目录）
+PS/.metadata/
+PS/.analytics/
+PS/RemoteSystemsTempFiles/
+PS/*.launch
+PS/.settings/
+PS/IDE.log
 
 # Vitis 编译产物（Standalone目录下已有.gitignore，这里补充根目录规则）
 # 注意：Standalone目录下的.o, .d文件会被Standalone/.gitignore忽略
