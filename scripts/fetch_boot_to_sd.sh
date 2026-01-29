@@ -54,7 +54,7 @@ main() {
 
   # 检查远程文件是否存在并计算哈希值
   echo "正在检查远程文件..."
-  REMOTE_HASH=$(ssh "${USER}@${SERVER}" "if [ -f '$REMOTE_PATH' ]; then md5sum '$REMOTE_PATH' 2>/dev/null | cut -d' ' -f1 || md5 -q '$REMOTE_PATH' 2>/dev/null; else echo ''; fi" 2>/dev/null)
+  REMOTE_HASH=$(ssh "${USER}@${SERVER}" "if [ -f '$REMOTE_PATH' ]; then if command -v md5sum &>/dev/null; then md5sum '$REMOTE_PATH' 2>/dev/null | cut -d' ' -f1; elif command -v md5 &>/dev/null; then md5 -q '$REMOTE_PATH' 2>/dev/null; else echo ''; fi; else echo ''; fi" 2>/dev/null)
   if [[ -z "$REMOTE_HASH" ]]; then
     echo "❌ 错误: 远程文件不存在或无法计算哈希值"
     exit 1
@@ -85,8 +85,20 @@ main() {
     exit 1
   fi
 
-  # 计算本地文件哈希值
-  LOCAL_HASH=$(md5sum "$DEST" 2>/dev/null | cut -d' ' -f1 || md5 -q "$DEST" 2>/dev/null)
+  # 计算本地文件哈希值（macOS 使用 md5 -q，Linux 使用 md5sum）
+  if command -v md5sum &>/dev/null; then
+    LOCAL_HASH=$(md5sum "$DEST" 2>/dev/null | cut -d' ' -f1)
+  elif command -v md5 &>/dev/null; then
+    LOCAL_HASH=$(md5 -q "$DEST" 2>/dev/null)
+  else
+    echo "❌ 错误: 未找到 md5 或 md5sum 命令"
+    exit 1
+  fi
+  
+  if [[ -z "$LOCAL_HASH" ]]; then
+    echo "❌ 错误: 无法计算本地文件哈希值"
+    exit 1
+  fi
   
   # 对比哈希值
   if [[ "$REMOTE_HASH" == "$LOCAL_HASH" ]]; then
@@ -96,7 +108,11 @@ main() {
     
     # 如果备份文件存在，检查是否与新文件相同
     if [[ -f "$BACKUP_DEST" ]]; then
-      BACKUP_HASH=$(md5sum "$BACKUP_DEST" 2>/dev/null | cut -d' ' -f1 || md5 -q "$BACKUP_DEST" 2>/dev/null)
+      if command -v md5sum &>/dev/null; then
+        BACKUP_HASH=$(md5sum "$BACKUP_DEST" 2>/dev/null | cut -d' ' -f1)
+      elif command -v md5 &>/dev/null; then
+        BACKUP_HASH=$(md5 -q "$BACKUP_DEST" 2>/dev/null)
+      fi
       if [[ "$BACKUP_HASH" == "$LOCAL_HASH" ]]; then
         echo "ℹ️  提示: 新文件与备份文件相同（可能未重新编译）"
       else
