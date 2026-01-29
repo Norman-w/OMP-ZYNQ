@@ -37,4 +37,5 @@ RemoteSystemsTempFiles/
 # Vitis 编译产物（Standalone目录下已有.gitignore，这里补充根目录规则）
 # 注意：Standalone目录下的.o, .d文件会被Standalone/.gitignore忽略
 # 但保留必要的源文件和配置文件
+tempdsa/
 
