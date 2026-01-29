@@ -29,6 +29,7 @@ Thumbs.db
 
 # Vitis/Xilinx SDK 工作空间临时文件（工作空间在PS目录）
 PS/.metadata/
+PS/.analytics
 PS/.analytics/
 PS/RemoteSystemsTempFiles/
 PS/*.launch
