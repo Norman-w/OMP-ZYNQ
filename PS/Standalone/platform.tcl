@@ -44,3 +44,10 @@ catch {bsp regenerate}
 platform generate -domains Standalone,standalone_domain 
 platform clean
 platform generate
+platform active {Standalone}
+bsp reload
+bsp reload
+platform generate -domains 
+platform config -updatehw {D:/ZYNQ/Norman/OMP/PL/System_wrapper.xsa}
+platform clean
+platform generate
