@@ -1,0 +1,27 @@
+# Vivado 编译产物和临时文件
+*.cache/
+*.runs/
+*.sim/
+*.hw/
+*.ip_user_files/
+.Xil/
+*.jou
+*.log
+*.str
+*.pb
+*.backup.*
+
+# Vivado 项目备份
+*.backup
+*.bak
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+*~
+
+# 编辑器临时文件
+*.swp
+*.swo
+*~
+
