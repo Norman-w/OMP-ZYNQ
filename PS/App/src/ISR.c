@@ -84,6 +84,8 @@ void ScuTimer_IRQ_Handler(void *CallBackRef)
 		Flag_500ms++;
 
 
+t/* 网络监测：每10ms调用一次（在10ms定时器中断中） */
+	network_monitor_timer_tick();
 	/* ������������������� */
     XScuTimer_ClearInterruptStatus(&ScuTimer);
 }
