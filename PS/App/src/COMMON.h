@@ -2,14 +2,14 @@
 #define ACZ702_LIB_COMMON_H_
 
 
-//ÏµÍ³Í·ÎÄ¼þ
+//ÏµÍ³Í·ï¿½Ä¼ï¿½
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 
 
-//XilinxÍ·ÎÄ¼þ
+//XilinxÍ·ï¿½Ä¼ï¿½
 #include "xil_types.h"
 #include "sleep.h"
 #include "xparameters.h"
@@ -19,7 +19,7 @@
 #include "ff.h"
 
 
-//AC820Í·ÎÄ¼þ
+//AC820Í·ï¿½Ä¼ï¿½
 #include "ISR.h"
 #include "SCU_GIC.h"
 #include "SCU_TIMER.h"
@@ -32,20 +32,20 @@
 #include "Touch.h"
 #include "BMP_WR.h"
 
-//ÓÃ»§Í·ÎÄ¼þ
+//ï¿½Ã»ï¿½Í·ï¿½Ä¼ï¿½
 #include "Handle_Process.h"
 
 
 
-//ÓÃ»§ºê¶¨Òå
-#define	CPU_CLK_HZ	XPAR_PS7_CORTEXA9_0_CPU_CLK_FREQ_HZ	//CPUÊ±ÖÓÆµÂÊ(µ¥Î»Hz)
+//ï¿½Ã»ï¿½ï¿½ê¶¨ï¿½ï¿½
+#define	CPU_CLK_HZ	XPAR_PS7_CORTEXA9_0_CPU_CLK_FREQ_HZ	//CPUÊ±ï¿½ï¿½Æµï¿½ï¿½(ï¿½ï¿½Î»Hz)
 #define INPUT		1
 #define OUTPUT		0
 #define	REG8		8
 #define	REG16		16
-#define PS_KEY 47       //PS_KEYÎªMIO47£¬¶ÔÓ¦µÄGPIO±àºÅÎª47
+#define PS_KEY 47       //PS_KEYÎªMIO47ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½GPIOï¿½ï¿½ï¿½Îª47
 
 
-//ÓÃ»§ÉùÃ÷ÒýÓÃ
+//ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 #endif /* AC820_LIB_COMMON_H_ */

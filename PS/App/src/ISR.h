@@ -3,18 +3,18 @@
 
 #include "COMMON.h"
 
-//ÉùÃ÷±êÖ¾
-extern uint8_t Wave_Run;			//²¨ĞÎ²É¼¯±êÖ¾
-extern uint8_t Single_TriggerFlag;	//´¥·¢±êÖ¾
-extern uint8_t Cancel_Trigger;		//È¡Ïû´¥·¢
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾
+extern uint8_t Wave_Run;			//ï¿½ï¿½ï¿½Î²É¼ï¿½ï¿½ï¿½Ö¾
+extern uint8_t Single_TriggerFlag;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾
+extern uint8_t Cancel_Trigger;		//È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-//ÉùÃ÷¸÷¸ö½ø³ÌµÄ±êÖ¾
-extern uint8_t Flag_DrawWave;		//»æÖÆ²¨ĞÎ£¬10msÒ»´Î
-extern uint8_t Flag_DrawGrid;		//»æÖÆÍø¸ñ£¬20msÒ»´Î
-extern uint8_t Flag_TouchScan;		//´¥ÃşÉ¨Ãè£¬30msÒ»´Î
-extern uint8_t Flag_Refresh_Val;	//Ë¢ĞÂµçÑ¹ºÍÆµÂÊÊıÖµ£¬500msÒ»´Î
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌµÄ±ï¿½Ö¾
+extern uint8_t Flag_DrawWave;		//ï¿½ï¿½ï¿½Æ²ï¿½ï¿½Î£ï¿½10msÒ»ï¿½ï¿½
+extern uint8_t Flag_DrawGrid;		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½20msÒ»ï¿½ï¿½
+extern uint8_t Flag_TouchScan;		//ï¿½ï¿½ï¿½ï¿½É¨ï¿½è£¬30msÒ»ï¿½ï¿½
+extern uint8_t Flag_Refresh_Val;	//Ë¢ï¿½Âµï¿½Ñ¹ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½500msÒ»ï¿½ï¿½
 
-//±êÖ¾ÖĞ¶Ï´¦Àí³ÌĞòÓÃÓÚ½«ÊÂ¼şÍ¨ÖªÓ¦ÓÃ³ÌĞòÉÏÏÂÎÄ
+//ï¿½ï¿½Ö¾ï¿½Ğ¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú½ï¿½ï¿½Â¼ï¿½Í¨ÖªÓ¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 extern volatile int RxDone;
 extern volatile int Error;
 

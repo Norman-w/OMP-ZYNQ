@@ -1,6 +1,6 @@
 /**
   *****************************************************************************
-  * 					´æ·ÅÓÃ»§ÖÐ¶Ï´¦Àíº¯Êý£¬·½±ãÍ³Ò»´¦Àí
+  * 					ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í³Ò»ï¿½ï¿½ï¿½ï¿½
   *****************************************************************************
   *
   * @File   : ISR.c
@@ -14,7 +14,7 @@
 
 #include "ISR.h"
 
-//¸÷¸öÊ±¼ä±êÖ¾Î»
+//ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö¾Î»
 static uint8_t Flag_20ms = 0;
 static uint8_t Flag_30ms = 0;
 static uint8_t Flag_50ms = 0;
@@ -22,22 +22,22 @@ static uint8_t Flag_100ms = 0;
 static uint8_t Flag_200ms = 0;
 static uint8_t Flag_500ms = 0;
 
-//¶¨Òå¸÷¸ö½ø³ÌµÄ±êÖ¾Î»
-uint8_t Flag_DrawWave = 0;		//»æÖÆ²¨ÐÎ£¬10msÒ»´Î
-uint8_t Flag_DrawGrid = 0;		//»æÖÆÍø¸ñ£¬20msÒ»´Î
-uint8_t Flag_TouchScan = 0;		//´¥ÃþÉ¨Ãè£¬30msÒ»´Î
-uint8_t Flag_Refresh_Val = 0;	//Ë¢ÐÂµçÑ¹ºÍÆµÂÊÊýÖµ£¬500msÒ»´Î
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌµÄ±ï¿½Ö¾Î»
+uint8_t Flag_DrawWave = 0;		//ï¿½ï¿½ï¿½Æ²ï¿½ï¿½Î£ï¿½10msÒ»ï¿½ï¿½
+uint8_t Flag_DrawGrid = 0;		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½20msÒ»ï¿½ï¿½
+uint8_t Flag_TouchScan = 0;		//ï¿½ï¿½ï¿½ï¿½É¨ï¿½è£¬30msÒ»ï¿½ï¿½
+uint8_t Flag_Refresh_Val = 0;	//Ë¢ï¿½Âµï¿½Ñ¹ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½500msÒ»ï¿½ï¿½
 
 /**
   *****************************************************
-  * @brief	Ë½ÓÐ¶¨Ê±Æ÷ÖÐ¶Ï´¦Àí³ÌÐò
-  * @tag	±¾º¯ÊýÓÃÀ´´¦ÀíË½ÓÐ¶¨Ê±Æ÷ÖÐ¶Ï£¬ÔÚÄÚ²¿¼ÓÈëÓÃ»§³ÌÐò¼´¿É
+  * @brief	Ë½ï¿½Ð¶ï¿½Ê±ï¿½ï¿½ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  * @tag	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë½ï¿½Ð¶ï¿½Ê±ï¿½ï¿½ï¿½Ð¶Ï£ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ò¼´¿ï¿½
   *****************************************************
 **/
 void ScuTimer_IRQ_Handler(void *CallBackRef)
 {
-	/* ¡ý¡ý¡ýÓÃ»§´¦Àí¡ý¡ý¡ý */
-	//ÒÔÏÂÍ¨¹ý¼ÆÊ±Æ÷¿ØÖÆÃ¿¸ö½ø³ÌµÄ´¥·¢¼ä¸ô£¬Æô¶¯¶ÔÓ¦µÄ±êÖ¾Î»
+	/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	//ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ÌµÄ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ä±ï¿½Ö¾Î»
 	Flag_DrawWave = 1;
 
 	if(Flag_20ms >= 1) {
@@ -83,50 +83,50 @@ void ScuTimer_IRQ_Handler(void *CallBackRef)
 		Flag_500ms++;
 
 
-	/* ¡ü¡ü¡ü½áÊø´¦Àí¡ü¡ü¡ü */
+	/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
     XScuTimer_ClearInterruptStatus(&ScuTimer);
 }
 
-//±êÖ¾ÖÐ¶Ï´¦Àí³ÌÐòÓÃÓÚ½«ÊÂ¼þÍ¨ÖªÓ¦ÓÃ³ÌÐòÉÏÏÂÎÄ
+//ï¿½ï¿½Ö¾ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú½ï¿½ï¿½Â¼ï¿½Í¨ÖªÓ¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 volatile int RxDone;
 volatile int Error;
 
-//DMAµÄRx´«ÊäµÄÖÐ¶Ï·þÎñº¯Êý
+//DMAï¿½ï¿½Rxï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï·ï¿½ï¿½ï¿½ï¿½ï¿½
 void AXI_DMARx_IRQHandler(void *Callback)
 {
 	uint32_t IrqStatus;
 
-	//¶ÁÈ¡¹ÒÆðµÄÖÐ¶Ï
+	//ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 	IrqStatus = XAxiDma_IntrGetIrq(&AxiDma0, XAXIDMA_DEVICE_TO_DMA);
 
-	//È·ÈÏ¹ÒÆðµÄÖÐ¶Ï
+	//È·ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 	XAxiDma_IntrAckIrq(&AxiDma0, IrqStatus, XAXIDMA_DEVICE_TO_DMA);
 
-	//Èç¹ûÃ»ÓÐ·¢ÉúÖÐ¶Ï£¬Ôò²»Ö´ÐÐÈÎºÎ²Ù×÷
+	//ï¿½ï¿½ï¿½Ã»ï¿½Ð·ï¿½ï¿½ï¿½ï¿½Ð¶Ï£ï¿½ï¿½ï¿½Ö´ï¿½ï¿½ï¿½ÎºÎ²ï¿½ï¿½ï¿½
 	if (!(IrqStatus & XAXIDMA_IRQ_ALL_MASK)) {
 		return;
 	}
 
-	//Èç¹û·¢Éú´íÎóÔò¸´Î»Ó²¼þ£¬²¢ÖØÐÂÆô¶¯´«Êä
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»Ó²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if ((IrqStatus & XAXIDMA_IRQ_ERROR_MASK)) {
 
 		Error = 1;
 		//printf("RX Error!\n");
 
-		//¸´Î»
+		//ï¿½ï¿½Î»
 		XAxiDma_Reset(&AxiDma0);
-		//µÈ´ý¸´Î»Íê³É
+		//ï¿½È´ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½
 		while(!XAxiDma_ResetIsDone(&AxiDma0));
-		//Ê¹ÄÜDMAµÄRxÖÐ¶Ï
+		//Ê¹ï¿½ï¿½DMAï¿½ï¿½Rxï¿½Ð¶ï¿½
 		XAxiDma_IntrEnable(&AxiDma0, XAXIDMA_IRQ_ALL_MASK,XAXIDMA_DEVICE_TO_DMA);
-		//Æô¶¯ÐÂÒ»ÂÖ´«Êä
+		//ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Ö´ï¿½ï¿½ï¿½
 		XAxiDma_SimpleTransfer(&AxiDma0,(UINTPTR) P_ADC_Data,
 				ADC_DATA_LENGTH*2, XAXIDMA_DEVICE_TO_DMA);
 
 		return;
 	}
 
-	//Èç¹ûÍê³ÉÖÐ¶Ï±»¶ÏÑÔ£¬½«RxDoneÖÃ1
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï±ï¿½ï¿½ï¿½ï¿½Ô£ï¿½ï¿½ï¿½RxDoneï¿½ï¿½1
 	if ((IrqStatus & XAXIDMA_IRQ_IOC_MASK)) {
 
 		RxDone = 1;
@@ -142,7 +142,7 @@ void PS_GPIO_IRQ_Handler(void *CallBackRef, uint32_t Bank, uint32_t Status)
 	uint32_t Key_State,Int_State;
 //	XGpioPs *Gpio = (XGpioPs *)CallBackRef;
 
-	//Ìí¼ÓÅÐ¶ÏÀ´Ïû³ýÆäËüBankµÄ¸ÉÈÅ
+	//ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bankï¿½Ä¸ï¿½ï¿½ï¿½
 	if(Bank == (PS_KEY / 32)) {
 		Int_State = Status & (1 << (PS_KEY - ((PS_KEY / 32) * 32)));
 	} else {
@@ -150,10 +150,10 @@ void PS_GPIO_IRQ_Handler(void *CallBackRef, uint32_t Bank, uint32_t Status)
 	}
 
 	if(Int_State) {
-		usleep(10000);	//°´¼üÏû¶¶10ms
+		usleep(10000);	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½10ms
 		Key_State = XGpioPs_ReadPin(&GpioPs, PS_KEY);
 		if(Key_State == 0) {
-			//½ØÍ¼£¬´æÈëSD¿¨
+			//ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SDï¿½ï¿½
 			sprintf(Pic_Name,"Screenshot(%02d).bmp",Cnt);
 		    bmp_write(Pic_Name, (char *)&BMODE_800x480, (char *)frame);
 		    Cnt++;

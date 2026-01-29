@@ -8,17 +8,17 @@
 extern uint16_t *P_ADC_Data;
 
 
-//ÉùÃ÷²Ù×÷º¯Êý
-void Read_Wave_Data();		//´ÓDDR¶ÁÈ¡²¨ÐÎÊý¾Ý
-void Init_Homepage();		//³õÊ¼»¯Ö÷½çÃæ
-void Refresh_Measure_Val();	//Ë¢ÐÂ²âÁ¿Öµ
-void Refresh_WaveWindow();	//Ë¢ÐÂ²¨ÐÎ´°¿Ú
-void Touch_Scan();			//´¥ÃþÉ¨Ãè
-void STOP_Disable_Press();		//ÔÚSTOP×´Ì¬ÏÂ¶³½áÄ³Ð©²Ù×÷
-void STOP_Ensable_Press();		//½â³ýÔÚSTOP×´Ì¬ÏÂ±»¶³½áµÄ²Ù×÷
-void Trigger_Disable_Press();	//ÔÚµ¥´Î´¥·¢×´Ì¬ÏÂ¶³½áÄ³Ð©²Ù×÷
-void Trigger_Enable_Press();	//½â³ýÔÚµ¥´Î´¥·¢×´Ì¬ÏÂ±»¶³½áµÄ²Ù×÷
-void Perform_STOP();		//Ö´ÐÐSTOP²Ù×÷
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void Read_Wave_Data();		//ï¿½ï¿½DDRï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void Init_Homepage();		//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void Refresh_Measure_Val();	//Ë¢ï¿½Â²ï¿½ï¿½ï¿½Öµ
+void Refresh_WaveWindow();	//Ë¢ï¿½Â²ï¿½ï¿½Î´ï¿½ï¿½ï¿½
+void Touch_Scan();			//ï¿½ï¿½ï¿½ï¿½É¨ï¿½ï¿½
+void STOP_Disable_Press();		//ï¿½ï¿½STOP×´Ì¬ï¿½Â¶ï¿½ï¿½ï¿½Ä³Ð©ï¿½ï¿½ï¿½ï¿½
+void STOP_Ensable_Press();		//ï¿½ï¿½ï¿½ï¿½ï¿½STOP×´Ì¬ï¿½Â±ï¿½ï¿½ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½
+void Trigger_Disable_Press();	//ï¿½Úµï¿½ï¿½Î´ï¿½ï¿½ï¿½×´Ì¬ï¿½Â¶ï¿½ï¿½ï¿½Ä³Ð©ï¿½ï¿½ï¿½ï¿½
+void Trigger_Enable_Press();	//ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½Î´ï¿½ï¿½ï¿½×´Ì¬ï¿½Â±ï¿½ï¿½ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½
+void Perform_STOP();		//Ö´ï¿½ï¿½STOPï¿½ï¿½ï¿½ï¿½
 
 void Handle_Single_Trigger();
 void Handle_Round_Done();
