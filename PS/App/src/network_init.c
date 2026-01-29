@@ -207,18 +207,10 @@ int network_init(void)
 
     xil_printf("[NET] 网络接口已添加并启用\n\r");
 
-    // 配置YT8531 PHY为千兆模式（快速配置，不等待）
-    // 获取EMACPS实例
-    emacps_instance = (XEmacPs *)netif->state;
-    if (emacps_instance != NULL) {
-        xil_printf("[NET] 配置YT8531 PHY芯片...\n\r");
-        status = configure_yt8531_gigabit_mode(emacps_instance);
-        if (status != 0) {
-            xil_printf("[NET] 警告: YT8531 PHY配置失败，但继续网络初始化\n\r");
-        }
-    } else {
-        xil_printf("[NET] 警告: 无法获取EMACPS实例，跳过PHY配置\n\r");
-    }
+    // PHY配置暂时跳过，避免阻塞启动
+    // 注意：PHY配置可以在系统稳定后通过定时器回调异步进行
+    // 或者通过lwIP的自动链路检测功能自动处理
+    xil_printf("[NET] 注意: PHY配置将在后台自动进行，不阻塞启动\n\r");
 
     // 打印网络配置信息（不等待链路建立）
     xil_printf("[NET] 网络配置信息:\n\r");
