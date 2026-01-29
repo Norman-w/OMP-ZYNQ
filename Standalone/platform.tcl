@@ -23,3 +23,22 @@ bsp reload
 catch {bsp regenerate}
 platform config -updatehw {D:/ZYNQ/Norman/OMP/PL/System_wrapper.xsa}
 bsp reload
+catch {bsp regenerate}
+catch {bsp regenerate}
+platform generate -domains standalone_domain 
+bsp reload
+domain remove standalone_domain
+platform generate -domains 
+platform write
+domain create -name {Standalone} -os {standalone} -proc {ps7_cortexa9_0} -arch {32-bit} -display-name {Standalone} -desc {} -runtime {cpp}
+platform generate -domains 
+platform write
+domain -report -json
+bsp reload
+platform active {Standalone}
+bsp reload
+bsp setlib -name lwip211 -ver 1.5
+bsp write
+bsp reload
+catch {bsp regenerate}
+platform generate -domains Standalone,standalone_domain 
