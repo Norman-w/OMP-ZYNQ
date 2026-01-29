@@ -63,10 +63,6 @@
 #define NETWORK_MONITOR_TARGET_IP    "192.168.0.3"
 #define NETWORK_MONITOR_INTERVAL     500  // 5秒 = 500 * 10ms (定时器每10ms触发一次)
 
-// Ping参数定义
-#define PING_ID      0x1234
-#define PING_SEQNO   0x0001
-
 // 全局变量
 static struct netif *g_netif = NULL;
 static int g_network_init_status = 0;  // 0=未初始化, 1=成功, -1=失败
