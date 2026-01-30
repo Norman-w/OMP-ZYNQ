@@ -89,50 +89,92 @@ ping -c 3 baidu.com
 - 网关应为 `192.168.46.2`（VMware NAT默认）
 - 使用DHCP自动获取IP和网关，或使用静态IP配置
 
-### 3. 安装PetaLinux依赖
+### 3. 配置软件源（重要！）
+
+**⚠️ 关键步骤**：如果系统只有基础的 `bionic` 源，缺少 `bionic-updates` 和 `bionic-security`，会导致依赖冲突。必须先配置完整的软件源。
+
+#### 检查当前软件源配置
 
 ```bash
-# 更新包列表
-sudo apt-get update
-
-# 安装基础依赖
-sudo apt-get install -y \
-    gawk wget git-core diffstat unzip texinfo gcc-multilib \
-    build-essential chrpath socat cpio python python3 python3-pip \
-    python3-pexpect xz-utils debianutils iputils-ping libsdl1.2-dev \
-    xterm autoconf libtool libglib2.0-dev libarchive-dev \
-    libexpat1-dev libpng-dev libasound2-dev libpulse-dev \
-    libcaca-dev libncursesw5-dev python3-dev gawk
+# 检查是否缺少更新源
+cat /etc/apt/sources.list | grep -E "updates|security"
 ```
 
-**注意**：如果遇到依赖冲突，参考故障排除章节。
+如果输出为空或只有注释，说明缺少更新源，需要添加。
 
-### 4. 安装PetaLinux
+#### 配置完整的软件源（推荐使用清华镜像）
 
 ```bash
-# 创建安装目录
-sudo mkdir -p /opt/pkg/petalinux
-sudo chown $USER:$USER /opt/pkg/petalinux
+# 备份原配置
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup
 
-# 进入安装包所在目录（通常是/tmp）
-cd /tmp
+# 配置完整的软件源（包含updates和security）
+sudo tee /etc/apt/sources.list > /dev/null << 'EOF'
+# 清华大学镜像源 - Ubuntu 18.04
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-security main restricted universe multiverse
+EOF
+
+# 更新软件包列表
+sudo apt-get update
+```
+
+**为什么需要更新源？**
+- 系统可能已安装来自 `updates` 源的新版本运行时库
+- 开发包（`-dev`）如果只能从基础源获取，会要求旧版本
+- 版本不匹配导致依赖冲突
+- 添加 `updates` 源后，开发包也能获取匹配的新版本，解决冲突
+
+### 4. 安装PetaLinux依赖
+
+```bash
+# 1. 添加32位架构支持（PetaLinux需要）
+sudo dpkg --add-architecture i386
+sudo apt-get update
+
+# 2. 安装基础依赖
+sudo apt-get install -y \
+    tofrodos iproute2 gawk gcc g++ git make net-tools libncurses5-dev \
+    tftpd zlib1g:i386 libssl-dev flex bison libselinux1 gnupg wget diffstat chrpath socat \
+    xterm autoconf libtool tar unzip texinfo zlib1g-dev gcc-multilib build-essential \
+    libsdl1.2-dev libglib2.0-dev screen pax gzip automake \
+    python python3 python3-pip python3-pexpect xz-utils debianutils iputils-ping \
+    libarchive-dev libexpat1-dev libpng-dev libasound2-dev libpulse-dev \
+    libcaca-dev libncursesw5-dev python3-dev
+```
+
+**注意**：
+- 如果遇到配置文件冲突提示（如 `default.pa`），通常选择 `Y` 安装维护者版本
+- 如果仍有依赖冲突，参考故障排除章节
+
+### 5. 安装PetaLinux
+
+```bash
+# 创建安装目录（小梅哥建议的目录结构）
+sudo mkdir -p /opt/Petalinux/2020.2
+sudo chown $USER:$USER /opt/Petalinux/2020.2
+
+# 进入安装包所在目录（通常是~/）
+cd ~
 
 # 执行安装（使用 -d 参数指定安装目录）
-./petalinux-v2020.2-final-installer.run -d /opt/pkg/petalinux
+./petalinux-v2020.2-final-installer.run -d /opt/Petalinux/2020.2
 
 # 安装过程中：
 # 1. 阅读并接受license（输入 y）
 # 2. 等待安装完成（约10-30分钟）
 ```
 
-### 5. 配置环境变量
+### 6. 配置环境变量
 
 ```bash
 # 编辑 ~/.bashrc
 nano ~/.bashrc
 
 # 添加以下内容
-source /opt/pkg/petalinux/settings.sh
+source /opt/Petalinux/2020.2/settings.sh
 
 # 使配置生效
 source ~/.bashrc
@@ -151,27 +193,49 @@ petalinux-version
 ```
 E: Unable to correct problems, you have held broken packages.
 gcc-multilib : Depends: gcc-7-multilib (>= 7.3.0-12~) but it is not going to be installed
+libarchive-dev : 依赖: libarchive13 (= 3.2.2-3.1) 但是 3.2.2-3.1ubuntu0.5 正要被安装
 ```
 
-**原因**：32位库版本冲突
+**最常见原因**：软件源配置不完整，缺少 `bionic-updates` 和 `bionic-security` 源
+- 系统已安装来自 `updates` 源的新版本运行时库
+- 开发包只能从基础源获取，要求旧版本
+- 版本不匹配导致依赖冲突
 
-**解决**：
+**解决**（按优先级）：
+
+**方法1：添加更新源（推荐，通常能解决问题）**
 ```bash
-# 方法1：使用aptitude自动解决依赖
+# 检查是否缺少更新源
+cat /etc/apt/sources.list | grep -E "updates|security"
+
+# 如果输出为空，添加完整的软件源（参考步骤3）
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup
+sudo tee /etc/apt/sources.list > /dev/null << 'EOF'
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-security main restricted universe multiverse
+EOF
+
+sudo apt-get update
+# 然后重新安装依赖
+```
+
+**方法2：使用aptitude自动解决依赖**
+```bash
 sudo apt-get install -y aptitude
 sudo aptitude install -y gcc-multilib
+# aptitude会提供多个解决方案，通常选择第一个（按Y接受）
+```
 
-# 方法2：强制安装32位库（谨慎使用）
+**方法3：强制安装32位库（谨慎使用）**
+```bash
 sudo dpkg --add-architecture i386
 sudo apt-get update
 sudo apt-get install -y libc6:i386 zlib1g:i386 --allow-downgrades
-
-# 方法3：跳过检查（不推荐，可能导致运行时问题）
-# 创建符号链接绕过检查
-sudo ln -s /usr/bin/gcc /usr/bin/gcc-multilib
 ```
 
-**建议**：如果持续失败，考虑使用Docker容器或升级到Ubuntu 20.04。
+**建议**：优先使用方法1（添加更新源），这是最根本的解决方案。如果持续失败，考虑使用Docker容器或升级到Ubuntu 20.04。
 
 ### 卡点2：网络无法访问
 
@@ -218,11 +282,11 @@ cd /tmp
 rm -rf components doc etc .gitignore
 
 # 2. 创建干净的安装目录
-sudo mkdir -p /opt/pkg/petalinux
-sudo chown $USER:$USER /opt/pkg/petalinux
+sudo mkdir -p /opt/Petalinux/2020.2
+sudo chown $USER:$USER /opt/Petalinux/2020.2
 
 # 3. 使用 -d 参数（而不是 --dir）
-./petalinux-v2020.2-final-installer.run -d /opt/pkg/petalinux
+./petalinux-v2020.2-final-installer.run -d /opt/Petalinux/2020.2
 ```
 
 ### 卡点4：安装程序要求root权限
@@ -298,7 +362,7 @@ arm-xilinx-linux-gnueabi-gcc --version
 ### 常用命令
 ```bash
 # 激活PetaLinux环境
-source /opt/pkg/petalinux/settings.sh
+source /opt/Petalinux/2020.2/settings.sh
 
 # 创建PetaLinux项目
 petalinux-create -t project -n myproject --template zynq
@@ -316,7 +380,7 @@ petalinux-package --boot --fsbl --fpga --u-boot
 
 ### 目录结构
 ```
-/opt/pkg/petalinux/          # PetaLinux安装目录
+/opt/Petalinux/2020.2/       # PetaLinux安装目录（小梅哥建议的目录结构）
 ├── settings.sh              # 环境变量配置脚本
 ├── components/               # 组件源码
 ├── tools/                   # 工具链
