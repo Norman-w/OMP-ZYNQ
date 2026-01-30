@@ -39,6 +39,33 @@ sudo ufw allow ssh
 
 ### 2. 配置网络
 
+#### 🌐 方式A：手动通过ISO安装Ubuntu后配置静态IP（推荐）
+
+如果刚通过ISO手动安装完Ubuntu，需要配置静态IP地址，可以使用交互式配置向导：
+
+```bash
+# 进入项目目录
+cd /path/to/OMP
+
+# 运行静态IP配置脚本
+chmod +x docs/quick_start/setup_static_ip.sh
+./docs/quick_start/setup_static_ip.sh
+```
+
+脚本会：
+- 📋 自动列出所有可用的网络连接
+- 🎯 让你选择要配置的连接
+- 💡 智能提示当前IP和网关作为默认值
+- ⚙️ 交互式输入IP地址、网关、DNS等信息
+- ✅ 自动应用配置并验证网络连接
+
+**推荐配置**（VMware NAT模式）：
+- IP地址：`192.168.46.128/24`
+- 网关：`192.168.46.2`
+- DNS：`8.8.8.8,8.8.4.4`
+
+#### 🔧 方式B：手动配置网络
+
 **问题**：VM可能无法访问外网（ping不通8.8.8.8）
 
 **解决**：检查网关配置
@@ -60,7 +87,7 @@ ping -c 3 baidu.com
 
 **正确配置**：
 - 网关应为 `192.168.46.2`（VMware NAT默认）
-- 使用DHCP自动获取IP和网关
+- 使用DHCP自动获取IP和网关，或使用静态IP配置
 
 ### 3. 安装PetaLinux依赖
 
