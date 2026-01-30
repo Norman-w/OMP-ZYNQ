@@ -67,6 +67,8 @@ IDE.log
 **/bsp/**/include/xemacps*.h
 **/bsp/**/libsrc/
 **/bsp/*.mss
+**/*_bsp/**/include/xemacps*.h
+**/*_bsp/**/libsrc/
 
 # 临时文件和误创建的文件
 nul
