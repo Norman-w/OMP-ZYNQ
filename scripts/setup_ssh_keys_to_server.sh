@@ -77,5 +77,15 @@ TARGET=$(choose_server)
 TARGET="${TARGET//[$'\r\n']}"
 [[ -z "$TARGET" ]] && exit 1
 
+# 从TARGET中提取IP地址
+TARGET_IP=$(echo "$TARGET" | sed 's/.*@//')
+
+# 检查并删除known_hosts中的旧密钥（如果存在）
+if ssh-keygen -F "$TARGET_IP" &>/dev/null; then
+  echo "⚠️  检测到旧的主机密钥，正在删除..." >&2
+  ssh-keygen -R "$TARGET_IP" &>/dev/null || true
+  echo "✅ 已删除旧的主机密钥" >&2
+fi
+
 echo ">>> 配置 ${TARGET}（会提示输入一次密码）" >&2
 ssh-copy-id -i "$PUBKEY" "${TARGET}"
