@@ -1,0 +1,2 @@
+# PDF 转 Markdown+图片 所需依赖（与 atopile 无关，可用系统 pip3 安装）
+pymupdf>=1.24.0
