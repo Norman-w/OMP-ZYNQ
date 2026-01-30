@@ -12,8 +12,11 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # 默认参数
-INSTALLER_PATH="${1:-/tmp/petalinux-v2020.2-final-installer.run}"
+INSTALLER_PATH="${1:-${HOME}/petalinux-v2020.2-final-installer.run}"
 INSTALL_DIR="${2:-/opt/Petalinux/2020.2}"
+
+# 展开路径中的 ~
+INSTALLER_PATH="${INSTALLER_PATH/#\~/$HOME}"
 
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}PetaLinux 安装脚本${NC}"
@@ -78,11 +81,11 @@ if [ ! -f "$INSTALLER_PATH" ]; then
     echo -e "${RED}错误: 找不到安装包: ${INSTALLER_PATH}${NC}"
     echo ""
     echo "请将PetaLinux安装包(.run文件)放到以下位置之一:"
-    echo "  - /tmp/petalinux-v2020.2-final-installer.run"
+    echo "  - ~/petalinux-v2020.2-final-installer.run (默认)"
     echo "  - 或使用第一个参数指定路径: bash install_petalinux.sh /path/to/installer.run"
     echo ""
     echo "查找已存在的安装包:"
-    find /tmp /home /opt -name "*petalinux*.run" -o -name "*petalinux*.tar.gz" 2>/dev/null | head -5
+    find ~ /tmp /home /opt -name "*petalinux*.run" -o -name "*petalinux*.tar.gz" 2>/dev/null | head -5
     exit 1
 fi
 
