@@ -337,6 +337,46 @@ ssh-keygen -R 192.168.46.128
 ssh uisrc@192.168.46.128
 ```
 
+### 卡点7：构建时下载源码包很慢或卡住
+
+**症状**：`petalinux-build` 执行时下载源码包非常慢，或长时间无响应
+
+**原因**：无法访问国外源（GitHub、SourceForge等），网络连接慢
+
+**解决：配置SOCKS5代理（推荐）**
+
+如果Windows主机上有SOCKS5代理（如 `192.168.7.88:10080`），可以在VM上配置使用：
+
+```bash
+# 1. 安装proxychains4
+sudo apt-get install -y proxychains4
+
+# 2. 配置代理
+sudo tee /etc/proxychains.conf > /dev/null << 'EOF'
+strict_chain
+proxy_dns
+tcp_read_time_out 15000
+tcp_connect_time_out 8000
+
+[ProxyList]
+socks5 192.168.7.88 10080
+EOF
+
+# 3. 测试代理是否工作
+proxychains4 wget -O- --timeout=10 https://www.google.com 2>&1 | grep -E 'OK|已连接|200'
+# 如果看到 "200 OK" 或 "已连接"，说明代理工作正常
+
+# 4. 使用代理构建PetaLinux
+cd ~/petalinux-projects/OMP
+source /opt/Petalinux/2020.2/settings.sh
+proxychains4 petalinux-build
+```
+
+**注意**：
+- 将 `192.168.7.88:10080` 替换为你的实际代理地址和端口
+- 代理必须能从VM访问到（确保网络连通）
+- 如果DNS解析显示 `224.0.0.1` 是正常的（proxychains的proxy_dns机制）
+
 ---
 
 ## ✅ 验证安装
