@@ -58,3 +58,27 @@ tempdsa/
 *.log
 IDE.log
 
+# 位流文件（编译产物）
+*.bit
+**/_ide/bitstream/
+
+# BSP 自动生成的文件
+**/bsp/**/lib/*.a
+**/bsp/**/include/xemacps*.h
+**/bsp/**/libsrc/
+**/bsp/*.mss
+
+# 临时文件和误创建的文件
+nul
+Packages/
+
+# Python 虚拟环境和缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.env
+
