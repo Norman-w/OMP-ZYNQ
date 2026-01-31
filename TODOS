@@ -1,15 +1,141 @@
 # Zynq 7z020 自定义镜像 vs 官方镜像 关键错误对比表
 | 序号 | 启动阶段 | 错误项 | 自定义镜像表现 | 官方镜像表现 | 根本原因 | 修复建议 | 影响程度 |
 | ---- | -------- | ------ | -------------- | ------------ | -------- | -------- | -------- |
-| 1 | U-Boot | SPI Flash 探测失败 | `Loading Environment from SPI Flash... Invalid bus 0 (err=-19)`<br>`Flash: 0 Bytes` | 成功识别 `w25q128` (16 MiB)，仅提示 `bad CRC` | 自定义 U-Boot 未适配 ACZ820 板卡的 `w25q128` SPI Flash 驱动，SPI 总线/片选配置错误 | 复用官方 U-Boot 中 SPI Flash 驱动配置，添加 `w25q128` 设备支持，修正 SPI0 总线与 CS0 片选参数 | 高 |
+| 1 | U-Boot | SPI Flash 探测失败 | `Loading Environment from SPI Flash... Invalid bus 0 (err=-19)`<br>`Flash: 0 Bytes` | 成功识别 `w25q128` (16 MiB)，仅提示 `bad CRC` | **Vivado PS配置中QSPI未启用** (`PCW_EN_QSPI=0`)，导致U-Boot无法识别SPI Flash | **Vivado修改：在"Peripheral I/O Pins"页面勾选"Quad SPI Flash"**，配置为单线模式，MIO引脚0-5（Bank 0），频率50MHz | 高 |
 | 2 | U-Boot | 以太网 PHY 地址未获取 | `phyaddr -1`，仅识别 eth0 | eth0 `phyaddr 1`、eth1 `phyaddr 5`，双网口均识别 | 自定义 U-Boot/设备树未配置 ACZ820 板卡双网口 PHY 物理地址，无 eth1 节点配置 | 设备树中添加双网口 `phy-handle` 节点，配置 PHY 地址 1（eth0）、5（eth1），U-Boot 中设置 `phyaddr` 环境变量 | 中 |
 | 3 | U-Boot | 板卡型号未识别 | 仅显示 `Zynq 7z020`，无具体板卡信息 | 明确识别 `Model: ACZ820 ZYNQ Development Board` | 自定义设备树缺失 `model` 与 `compatible` 节点，未匹配 ACZ820 板卡配置 | 设备树中添加板卡标识节点：`model = "ACZ820 ZYNQ Development Board"`；`compatible = "xlnx,zynq-7000"` | 中 |
 | 4 | U-Boot | 环境变量无法保存 | 提示 `using default environment`，无法读写 SPI Flash | 可正常擦写 SPI Flash，仅 CRC 校验异常不影响功能 | 同 SPI Flash 驱动适配失败，U-Boot 无法操作 Flash 存储环境变量 | 修复 SPI Flash 驱动后，执行 `saveenv` 保存 U-Boot 环境变量 | 中 |
-| 5 | Linux 内核 | VDMA 初始化失败 | `xilinx-vdma 43000000.dma: unable to request IRQ 0`<br>`device has no channels!` | VDMA 成功 probe，初始化 800x480 帧缓冲：`Xilinx framebuffer initialized` | 1. 自定义设备树 VDMA 中断号配置错误（非 ACZ820 实际中断）；2. 未加载 ACZ820 官方 PL 比特流；3. VDMA 通道/帧缓冲参数缺失 | 1. 复用官方设备树 VDMA 节点配置（中断号、通道数、帧参数）；2. 启动时加载官方 `system_wrapper` PL 比特流；3. 确保内核开启 Xilinx VDMA 驱动 | 高 |
-| 6 | Linux 内核 | RTC 实时时钟未识别 | `hctosys: unable to open rtc device (rtc0)`，无 RTC 相关日志 | 成功识别 `rtc-pcf8563 2-0051`，注册为 `rtc0` 并同步系统时间 | 自定义设备树缺失 I2C2 节点及 `pcf8563` RTC 子节点，未匹配 ACZ820 RTC 硬件地址（0x51） | 复用官方设备树 I2C2 与 RTC 节点配置，内核开启 `rtc-pcf8563` 驱动 | 高 |
-| 7 | Linux 内核 | SPI Flash 无 MTD 分区 | 内核无任何 SPI Flash 识别日志 | 识别 `w25q128`，创建 4 个 MTD 分区（boot/bootenv/kernel/spare） | 自定义设备树缺失 SPI0 及 `spi-nor` 子节点，内核无法识别 Flash 并分区 | 复用官方设备树 SPI Flash 分区配置，内核开启 SPI Nor Flash 与 MTD 分区驱动 | 中 |
+| 5 | Linux 内核 | VDMA 初始化失败 | `xilinx-vdma 43000000.dma: unable to request IRQ 0`<br>`device has no channels!` | VDMA 成功 probe，初始化 800x480 帧缓冲：`Xilinx framebuffer initialized` | **VDMA中断未连接到xlconcat**，设备树中无中断配置 | **Vivado BD修改：将`axi_vdma_0/mm2s_introut`连接到`xlconcat_0/In2`**，然后在设备树中添加中断配置 `interrupts = <0 31 4>` | 高 |
+| 6 | Linux 内核 | RTC 实时时钟未识别 | `hctosys: unable to open rtc device (rtc0)`，无 RTC 相关日志 | 成功识别 `rtc-pcf8563 2-0051`，注册为 `rtc0` 并同步系统时间 | **Vivado PS配置中I2C1未启用** (`PCW_I2C1_PERIPHERAL_ENABLE=0`)，导致设备树无I2C1节点，无法访问RTC | **Vivado修改：在"Peripheral I/O Pins"页面勾选"I2C 1"**，配置为EMIO模式（通过PL连接），或在MIO Configuration中分配MIO引脚（通常MIO 48/49） | 高 |
+| 7 | Linux 内核 | SPI Flash 无 MTD 分区 | 内核无任何 SPI Flash 识别日志 | 识别 `w25q128`，创建 4 个 MTD 分区（boot/bootenv/kernel/spare） | 同QSPI未启用，内核无法识别Flash并分区 | 启用QSPI后，设备树会自动生成qspi节点，内核可识别Flash并创建MTD分区 | 中 |
 | 8 | Linux 内核 | 内核启动参数错误 | `root=/dev/ram0 rw`，基于内存临时根文件系统启动 | `root=/dev/mmcblk0p2 rw rootwait`，直接挂载 SD 卡 ext4 根分区 | 自定义镜像使用 initramfs 临时根文件系统，未配置 SD 卡根分区挂载，无法加载外设驱动 | 修改内核命令行，替换为官方参数：`console=ttyPS0,115200 earlyprintk root=/dev/mmcblk0p2 rw rootwait` | 高 |
 | 9 | Linux 内核 | 外设节点缺失 | 无声卡、触摸屏、双 I2C、USB 等外设识别日志 | 成功加载 ES8388 声卡、Goodix 触摸屏、双 I2C、USB2.0 等全量外设驱动 | 自定义设备树未适配 ACZ820 板卡外设硬件节点，内核无对应驱动匹配对象 | 完整复用官方设备树所有外设节点（I2C、音频、触摸屏、USB 等），内核开启对应外设驱动 | 高 |
 | 10 | 系统初始化 | RTC 设备文件缺失 | `hwclock: can't open '/dev/misc/rtc': No such file or directory` | 无 RTC 错误，`hwclock` 可正常访问 `/dev/rtc0` | 内核未识别 RTC 硬件，未创建 RTC 设备文件，与内核阶段 RTC 未识别同源 | 修复内核 RTC 识别问题后，自动生成 RTC 设备文件 | 高 |
 | 11 | 系统初始化 | SD 卡文件系统警告 | `FAT-fs (mmcblk0p1): Volume was not properly unmounted` | 出现相同警告（通用问题，非镜像适配故障） | SD 卡未正常关机/拔卡，FAT32 分区文件系统异常 | 1. PetaLinux 根文件系统添加 `dosfstools` 包，执行 `fsck.vfat /dev/mmcblk0p1 -y` 修复；2. 正常关机避免异常断电 | 低 |
 | 12 | 系统初始化 | 外设驱动未加载 | 仅启动基础系统，无任何外设驱动加载日志 | 成功加载声卡、触摸屏、网口、USB 等全量外设驱动，SSH/网络正常 | 设备树外设节点缺失 + 启动参数错误，系统无法识别并加载外设驱动 | 修复设备树与内核启动参数后，系统自动加载对应驱动 | 高 |
+
+---
+
+## Vivado PS配置修改步骤（修复QSPI和I2C1问题）
+
+### 问题1：启用Quad SPI Flash（修复SPI Flash探测失败）
+
+**当前状态**：在"Peripheral I/O Pins"页面中，"Quad SPI Flash"复选框**未勾选**
+
+**修改步骤**：
+1. 在左侧"Page Navigator"中，确保选中"Peripheral I/O Pins"
+2. 在右侧"Peripheral List"中，找到"Quad SPI Flash"项
+3. **勾选"Quad SPI Flash"复选框**
+4. 点击"Quad SPI Flash"左侧的展开箭头，展开配置选项
+5. 配置QSPI模式：
+   - **Mode**: 选择"Single"（单线模式，与w25q128兼容）
+   - **IO Type**: 选择"STD 3.3V"或根据板卡选择
+6. 确认MIO引脚分配：
+   - QSPI通常使用MIO 0-5（Bank 0）
+   - 在右侧MIO Pin Assignment Grid中，应看到绿色/灰色条覆盖MIO 0-5
+   - 如果引脚冲突，Vivado会提示，需要调整其他外设的引脚分配
+7. 点击"OK"保存配置
+
+**为什么修复**：
+- QSPI未启用时，PS7的QSPI控制器被禁用，U-Boot和Linux内核无法访问SPI Flash
+- 启用后，设备树会自动生成`&qspi`节点，U-Boot可以识别w25q128 Flash芯片
+
+**达到目标**：
+- U-Boot启动时能识别SPI Flash：`Flash: w25q128 (16 MiB)`
+- 可以保存和读取U-Boot环境变量
+- Linux内核可以识别Flash并创建MTD分区
+
+---
+
+### 问题2：启用I2C1（修复RTC识别失败）
+
+**当前状态**：在"Peripheral I/O Pins"页面中，"I2C 1"可能未显示或未勾选
+
+**修改步骤**：
+1. 在"Peripheral I/O Pins"页面的"Peripheral List"中，向下滚动查找"I2C 1"项
+2. **勾选"I2C 1"复选框**
+3. 点击"I2C 1"左侧的展开箭头，展开配置选项
+4. 配置I2C1模式：
+   - **IO Type**: 选择"EMIO"（通过PL连接）或"MIO"（直接使用PS引脚）
+   - 如果选择EMIO：I2C1信号会通过PL连接到外部硬件（需要PL设计支持）
+   - 如果选择MIO：需要分配MIO引脚（通常MIO 48/49用于I2C1的SDA/SCL）
+5. 如果使用MIO模式：
+   - 切换到左侧"Page Navigator" → "MIO Configuration"
+   - 找到I2C1的SDA和SCL引脚分配
+   - 根据ACZ820板卡原理图，分配正确的MIO引脚（通常MIO 48=SDA, MIO 49=SCL）
+6. 点击"OK"保存配置
+
+**为什么修复**：
+- I2C1未启用时，PS7的I2C1控制器被禁用，设备树中不会生成`&i2c1`节点
+- RTC芯片（PCF8563@0x51）连接在I2C1总线上，没有I2C1节点就无法访问RTC
+- 启用后，设备树会自动生成`&i2c1`节点，内核可以识别RTC设备
+
+**达到目标**：
+- Linux内核启动时识别RTC：`rtc-pcf8563 2-0051: registered as rtc0`
+- 系统时间可以从RTC同步：`hctosys: unable to open rtc device (rtc0)`错误消失
+- `hwclock`命令可以正常访问`/dev/rtc0`
+
+---
+
+### 问题3：连接VDMA中断（修复VDMA初始化失败）
+
+**注意**：此修改在Block Design（BD）中完成，不在PS配置对话框中
+
+**当前状态**：`axi_vdma_0/mm2s_introut`未连接到`xlconcat_0`
+
+**修改步骤**：
+1. 关闭PS配置对话框，返回Vivado主界面
+2. 打开Block Design（`System.bd`）
+3. 在BD中查找`axi_vdma_0`IP核
+4. 找到`axi_vdma_0`的`mm2s_introut`中断输出引脚
+5. 查找`xlconcat_0`IP核（中断合并器）
+6. 将`axi_vdma_0/mm2s_introut`连接到`xlconcat_0/In2`（In0和In1已被axi_dma占用）
+7. 确认`xlconcat_0/dout`已连接到`processing_system7_0/IRQ_F2P`
+8. 保存BD设计
+9. **重要**：重新生成BD输出文件（右键BD → "Generate Output Products"）
+10. **重要**：重新综合、实现和生成比特流
+
+**为什么修复**：
+- VDMA需要中断信号来通知DMA传输完成
+- 如果中断未连接，设备树中VDMA节点没有`interrupts`属性
+- 内核驱动无法请求中断，导致`unable to request IRQ 0`错误
+- 连接中断后，设备树会自动生成中断配置，内核可以正确初始化VDMA
+
+**达到目标**：
+- VDMA驱动成功probe：`xilinx-vdma 43000000.dma: Xilinx AXI VDMA Engine Driver Probed!!`
+- 不再出现`unable to request IRQ 0`错误
+- VDMA通道可以正常工作
+
+---
+
+## 修改后的后续步骤
+
+1. **重新生成XSA文件**：
+   - 在Vivado中：File → Export → Export Hardware
+   - 选择"Include bitstream"（如果已生成比特流）
+   - 保存XSA文件
+
+2. **更新PetaLinux工程**：
+   ```bash
+   cd /home/norman/petalinux-projects/OMP
+   petalinux-config --get-hw-description=<XSA文件路径>
+   ```
+
+3. **重新编译设备树**：
+   ```bash
+   petalinux-build -c device-tree
+   ```
+
+4. **检查设备树生成**：
+   - 确认`&qspi`节点存在
+   - 确认`&i2c1`节点存在
+   - 确认`&axi_vdma_0`节点有`interrupts`属性
+
+5. **重新编译完整工程**：
+   ```bash
+   petalinux-build
+   ```
+
+6. **部署到SD卡并测试**：
+   - 复制`BOOT.BIN`、`image.ub`、`system.bit`到SD卡BOOT分区
+   - 上电测试，检查串口日志确认问题是否解决
