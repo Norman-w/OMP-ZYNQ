@@ -86,14 +86,24 @@
 **修改步骤**：
 1. 关闭PS配置对话框，返回Vivado主界面
 2. 打开Block Design（`System.bd`）
-3. 在BD中查找`axi_vdma_0`IP核
-4. 找到`axi_vdma_0`的`mm2s_introut`中断输出引脚
-5. 查找`xlconcat_0`IP核（中断合并器）
-6. 将`axi_vdma_0/mm2s_introut`连接到`xlconcat_0/In2`（In0和In1已被axi_dma占用）
-7. 确认`xlconcat_0/dout`已连接到`processing_system7_0/IRQ_F2P`
-8. 保存BD设计
-9. **重要**：重新生成BD输出文件（右键BD → "Generate Output Products"）
-10. **重要**：重新综合、实现和生成比特流
+3. **修改xlconcat_0配置**（必须先做）：
+   - 双击`xlconcat_0`IP核
+   - 将`Number of Ports`从`2`改为`3`
+   - 输出宽度会自动变为`3`（`dout[2:0]`）
+   - 点击OK
+4. 在BD中查找`axi_vdma_0`IP核
+5. 找到`axi_vdma_0`的`mm2s_introut`中断输出引脚
+6. 查找`xlconcat_0`IP核（中断合并器），现在应该有`In2`端口了
+7. 将`axi_vdma_0/mm2s_introut`连接到`xlconcat_0/In2`（In0和In1已被axi_dma占用）
+8. 确认`xlconcat_0/dout`已连接到`processing_system7_0/IRQ_F2P`
+9. 保存BD设计
+10. **重要**：重新生成BD输出文件（右键BD → "Generate Output Products"）
+11. **重要**：重新综合、实现和生成比特流
+12. **重要**：重新导出XSA文件（File → Export → Export Hardware，包含bitstream）
+13. **重要**：更新PetaLinux工程：`petalinux-config --get-hw-description=<XSA路径>`
+14. **重要**：重新编译设备树：`petalinux-build -c device-tree`
+15. **重要**：检查生成的设备树，确认VDMA有中断配置
+16. **重要**：完整编译：`petalinux-build`
 
 **为什么修复**：
 - VDMA需要中断信号来通知DMA传输完成
@@ -106,36 +116,306 @@
 - 不再出现`unable to request IRQ 0`错误
 - VDMA通道可以正常工作
 
+**关于中断号**：
+- **中断号不能在BD中直接看到**，它是自动分配的
+- 中断号分配规则：
+  * Zynq PS的IRQ_F2P中断从32开始（0-31是PS内部中断）
+  * `xlconcat_0/In0` → `IRQ_F2P[0]` → 中断号32（设备树中可能显示为29，有偏移）
+  * `xlconcat_0/In1` → `IRQ_F2P[1]` → 中断号33（设备树中可能显示为30）
+  * `xlconcat_0/In2` → `IRQ_F2P[2]` → 中断号34（设备树中可能显示为31）
+- PetaLinux在生成设备树时会**自动根据xlconcat的输出位置分配中断号**
+- 你只需要确保连接正确，中断号会自动生成
+- 可以在生成的设备树文件（`pl.dtsi`）中查看实际分配的中断号
+
 ---
 
-## 修改后的后续步骤
+## 📋 完整修改流程（分阶段执行）
 
-1. **重新生成XSA文件**：
-   - 在Vivado中：File → Export → Export Hardware
-   - 选择"Include bitstream"（如果已生成比特流）
-   - 保存XSA文件
+### 🚀 阶段1：Vivado快速配置（无需等待，全部完成后再进入阶段2）
 
-2. **更新PetaLinux工程**：
-   ```bash
-   cd /home/norman/petalinux-projects/OMP
-   petalinux-config --get-hw-description=<XSA文件路径>
-   ```
+**目标**：在Vivado中完成所有配置修改，不进行综合实现
 
-3. **重新编译设备树**：
-   ```bash
-   petalinux-build -c device-tree
-   ```
+#### 步骤1.1：PS配置 - 启用QSPI
+1. 打开Vivado工程
+2. 打开Block Design（`System.bd`）
+3. 双击`processing_system7_0_0`IP核
+4. 在"Peripheral I/O Pins"页面：
+   - 勾选"Quad SPI Flash"
+   - 展开配置，选择"Single"模式
+   - **使用Vivado自动分配的MIO引脚**（通常会自动选择MIO 1-6或0-5，以Vivado显示为准）
+   - 如果Vivado显示MIO 1-6，就使用1-6；如果显示0-5，就使用0-5
+   - 在右侧MIO Pin Assignment Grid中确认引脚分配（绿色/灰色条）
+5. 点击"OK"保存
 
-4. **检查设备树生成**：
-   - 确认`&qspi`节点存在
-   - 确认`&i2c1`节点存在
-   - 确认`&axi_vdma_0`节点有`interrupts`属性
+#### 步骤1.2：PS配置 - 启用I2C1
+**重要发现**：根据官方镜像配置，I2C1使用**EMIO模式**，不占用MIO引脚！
 
-5. **重新编译完整工程**：
-   ```bash
-   petalinux-build
-   ```
+1. 在PS配置对话框中，切换到左侧"Page Navigator" → **"MIO Configuration"**页面
+2. 确认当前配置：
+   - **UART 1使用MIO 48-49**（这是正确的，与官方镜像一致）
+   - **I2C 1应该使用EMIO模式**（当前显示为EMIO，这是正确的）
+3. **如果I2C 1已经显示为EMIO，则无需修改**，直接进入下一步
+4. **如果I2C 1未启用或显示为其他模式**：
+   - 在"MIO Configuration"页面找到"I2C 1"行
+   - 确保"I2C 1"复选框已勾选
+   - 在"IO"列的下拉菜单中选择"EMIO"
+5. 配置完成后，点击"OK"保存
 
-6. **部署到SD卡并测试**：
-   - 复制`BOOT.BIN`、`image.ub`、`system.bit`到SD卡BOOT分区
-   - 上电测试，检查串口日志确认问题是否解决
+**为什么使用EMIO**：
+- 官方镜像中I2C1使用EMIO模式（`PCW_I2C1_I2C1_IO = EMIO`）
+- EMIO模式通过PL连接，不占用MIO引脚
+- 这样UART 1可以继续使用MIO 48-49，两者不冲突
+- 但需要确保PL设计中I2C1的EMIO信号已正确连接到外部硬件
+
+**如何检查I2C1 EMIO连接**：
+1. **在Vivado Block Design中检查**：
+   - 打开`System.bd`
+   - 找到`processing_system7_0_0`IP核
+   - 查看是否有`I2C1_SCL_O`、`I2C1_SCL_I`、`I2C1_SDA_O`、`I2C1_SDA_I`等端口
+   - 如果有这些端口，检查是否连接到外部（通过顶层模块或约束文件）
+   - 如果没有这些端口，说明I2C1的EMIO未启用或未连接
+
+2. **检查当前工程状态**：
+   - 当前工程中`PCW_EN_EMIO_I2C1 = 0`，说明I2C1的EMIO未启用
+   - 需要在PS配置中启用I2C1并选择EMIO模式后，这些端口才会出现
+
+3. **如果发现没有I2C1 EMIO连接**：
+   - **选项A**：保持EMIO模式，在BD中添加I2C1的EMIO端口并连接到顶层（需要修改PL设计）
+   - **选项B**：改为MIO模式，但需要将UART 1改到其他MIO引脚（如MIO 20-21）
+   - **选项C**：先测试，如果RTC无法识别，再决定采用哪种方案
+
+**关于UART引脚改变的影响**：
+- ✅ **设备树和BSP不会"对不上"**：设备树中的UART节点不包含MIO引脚信息，只包含基地址、中断等。UART驱动只关心基地址，不关心MIO引脚号。
+- ❌ **但硬件是固定的**：ACZ820板卡上的UART硬件固定连接到MIO 48-49，不能改！
+- ❌ **如果改UART引脚**：如果把UART改到MIO 20-21，但板卡硬件还是连在MIO 48-49，UART就用不了了！
+
+**结论**：
+- **不要改UART引脚**！板卡硬件固定，改不了。
+- **保持当前配置**：UART 1用MIO 48-49，I2C1用EMIO模式。
+- **I2C1必须用EMIO**：因为MIO 48-49被UART占用了，I2C1只能用EMIO模式。
+- **I2C1 EMIO未连接的问题**：需要在BD中将I2C1的EMIO端口连接到顶层，或者先测试看看RTC能否识别（可能硬件上I2C1通过其他方式连接）。
+
+**建议**：先完成PS配置（启用I2C1并选择EMIO），然后在BD中检查是否有I2C1的EMIO端口出现。如果没有，说明需要添加连接或改用MIO模式。
+
+**官方镜像配置总结**：
+- ✅ **UART 1使用MIO 48-49**：`PCW_UART1_UART1_IO = "MIO 48 .. 49"`（官方镜像确认）
+- ✅ **I2C1使用EMIO模式**：`PCW_I2C1_I2C1_IO = "EMIO"`（官方镜像确认）
+- ✅ **官方镜像RTC能识别**：说明I2C1的EMIO在官方镜像中已正确连接
+
+**当前状态确认**：
+- ✅ I2C1的EMIO端口已出现（`IIC_1 +`端口在`processing_system7_0`上可见）
+- ⚠️ **I2C1端口未连接到外部**（端口延伸出去但没有明确连接）
+- 📋 **这意味着**：I2C1在PS端已启用，但PL端没有将信号连接到FPGA引脚
+
+**必须做的操作**：
+根据官方镜像的配置，I2C1使用EMIO模式且RTC能识别，说明**必须将I2C1的EMIO端口连接到BD顶层**。
+
+**操作步骤**：
+1. 在BD中，右键点击`IIC_1`端口 → **"Make External"**
+2. 这会在BD顶层创建端口（如`IIC_1_0`，包含`scl_io`和`sda_io`信号）
+3. 这些端口会自动出现在顶层wrapper中
+4. **手动修改XDC文件**（明文文件，需要手动编辑）：
+   - 打开`ACM7606_Scope.srcs/constrs_1/new/System.xdc`
+   - 添加I2C1的引脚约束（根据ACZ820板卡原理图确定FPGA引脚号）
+   - 格式示例：
+     ```
+     set_property IOSTANDARD LVCMOS33 [get_ports {IIC_1_0_scl_io}]
+     set_property IOSTANDARD LVCMOS33 [get_ports {IIC_1_0_sda_io}]
+     set_property PACKAGE_PIN <引脚号> [get_ports {IIC_1_0_scl_io}]
+     set_property PACKAGE_PIN <引脚号> [get_ports {IIC_1_0_sda_io}]
+     ```
+
+**关于端口命名（IIC_1_0）**：
+- ✅ **设备树/BSP不受影响**：设备树中的`&i2c1`节点只包含基地址（0xE0005000）、时钟频率等，**不包含端口名信息**
+- ✅ **自动生成**：PetaLinux根据XSA文件中的I2C1配置（基地址、启用状态）自动生成设备树节点，**不依赖BD中的端口名**
+- ✅ **端口名可以任意**：`IIC_1_0`这个名字只是BD内部的连接标识，不影响设备树生成
+- ✅ **XDC中使用实际端口名**：在XDC文件中需要使用BD顶层wrapper中的实际端口名（如`IIC_1_0_scl_io`、`IIC_1_0_sda_io`）
+
+**XDC文件说明**：
+- **文件位置**：`ACM7606_Scope.srcs/constrs_1/new/System.xdc`
+- **文件类型**：明文文本文件（TCL脚本格式）
+- **修改方式**：手动编辑（用文本编辑器或Vivado的约束编辑器）
+- **修改时机**：在BD中Make External后，综合之前
+- **作用**：告诉Vivado工具链将哪些信号连接到哪些FPGA物理引脚
+
+**为什么必须连接**：
+- 官方镜像中I2C1用EMIO且RTC能识别，说明官方镜像的PL设计中I2C1的EMIO已连接到FPGA引脚
+- 你的工程中I2C1端口未连接，所以RTC无法识别
+- **必须连接才能保证RTC识别**
+
+**I2C1 EMIO引脚约束（已找到）**：
+根据ACZ820用户手册第31页I2C设备分布图和引脚分配表：
+- **PL_I2C_SCL**（I2C1时钟）→ **FPGA引脚：G22**
+- **PL_I2C_SDA**（I2C1数据）→ **FPGA引脚：H22**
+
+这些引脚连接到：音频编解码器（ES8388）、HDMI输出（SiI9022）、EEPROM（24LC64）、RTC（PCF8563）
+
+**XDC文件需要添加的内容**：
+在`ACM7606_Scope.srcs/constrs_1/new/System.xdc`文件末尾添加：
+```tcl
+# I2C1 EMIO约束（PL_I2C_SCL/SDA）
+set_property IOSTANDARD LVCMOS33 [get_ports {IIC_1_0_scl_io}]
+set_property IOSTANDARD LVCMOS33 [get_ports {IIC_1_0_sda_io}]
+set_property PACKAGE_PIN G22 [get_ports {IIC_1_0_scl_io}]
+set_property PACKAGE_PIN H22 [get_ports {IIC_1_0_sda_io}]
+```
+
+**如何确认端口名**（已确认）：
+从你的截图可以看到，在Vivado的"Design"标签页中，展开"External Interfaces" → "IIC_1_0"，可以看到：
+- `IIC_1_0_sda_i`（SDA输入）
+- `IIC_1_0_sda_o`（SDA输出）
+- `IIC_1_0_sda_t`（SDA三态控制）
+- `IIC_1_0_scl_i`（SCL输入）
+- `IIC_1_0_scl_o`（SCL输出）
+- `IIC_1_0_scl_t`（SCL三态控制）
+
+**重要**：I2C接口是三态信号，但在XDC约束中，通常使用综合后的顶层端口名，格式为：
+- `IIC_1_0_scl_io`（SCL的IO端口，综合后自动合并_i/_o/_t）
+- `IIC_1_0_sda_io`（SDA的IO端口，综合后自动合并_i/_o/_t）
+
+**确认方法**：
+1. **在BD的Design标签页中查看**（你已经看到了）：
+   - 左侧"Design"标签页 → "External Interfaces" → "IIC_1_0"
+   - 可以看到所有子信号：`sda_i`、`sda_o`、`sda_t`、`scl_i`、`scl_o`、`scl_t`
+   - 综合后，这些会合并成`IIC_1_0_scl_io`和`IIC_1_0_sda_io`
+
+2. **生成顶层wrapper后确认**（推荐，更准确）：
+   - 执行"Generate Output Products"
+   - 打开`System_wrapper.v`，搜索`IIC_1_0`，查看实际的顶层端口名
+   - 确认是`IIC_1_0_scl_io`和`IIC_1_0_sda_io`还是其他格式
+
+**XDC约束格式**：
+- 如果综合后端口名是`IIC_1_0_scl_io`和`IIC_1_0_sda_io`，使用：
+  ```tcl
+  set_property PACKAGE_PIN G22 [get_ports {IIC_1_0_scl_io}]
+  set_property PACKAGE_PIN H22 [get_ports {IIC_1_0_sda_io}]
+  ```
+- 如果端口名不同，需要相应调整
+
+**建议**：先按`IIC_1_0_scl_io`和`IIC_1_0_sda_io`添加约束，如果综合时报错说找不到端口，再查看wrapper文件确认实际端口名。
+
+#### 步骤1.3：BD修改 - VDMA中断连接
+1. 在Block Design中：
+   - 双击`xlconcat_0`IP核
+   - 将`Number of Ports`从`2`改为`3`
+   - 点击OK
+2. 连接中断：
+   - 将`axi_vdma_0/mm2s_introut`连接到`xlconcat_0/In2`
+   - 确认`xlconcat_0/dout`已连接到`processing_system7_0/IRQ_F2P`
+3. 保存BD设计（Ctrl+S）
+
+#### 步骤1.4：验证配置
+- ✅ 检查PS配置：QSPI已启用，I2C1已启用
+- ✅ 检查BD连接：xlconcat有3个输入，VDMA中断已连接
+- ✅ 保存所有更改
+
+**⚠️ 重要**：完成以上所有步骤后，再进入阶段2！
+
+---
+
+### ⏳ 阶段2：Vivado长流程（需要等待，一次性完成）
+
+**目标**：生成新的硬件描述文件（XSA），包含所有修改
+
+#### 步骤2.1：重新生成BD输出
+1. 在Block Design中，右键点击BD → "Generate Output Products"
+2. 选择"Out of context per IP"或"Global"
+3. 点击"Generate"
+4. 等待完成（几分钟）
+
+#### 步骤2.2：重新综合
+1. 在Flow Navigator中，点击"Run Synthesis"
+2. 等待综合完成（可能需要10-30分钟，取决于设计复杂度）
+3. 综合完成后，选择"Run Implementation"（如果自动弹出）
+
+#### 步骤2.3：重新实现
+1. 如果未自动启动，在Flow Navigator中点击"Run Implementation"
+2. 等待实现完成（可能需要20-60分钟）
+3. 实现完成后，选择"Generate Bitstream"（如果自动弹出）
+
+#### 步骤2.4：生成比特流
+1. 如果未自动启动，在Flow Navigator中点击"Generate Bitstream"
+2. 等待比特流生成完成（可能需要10-30分钟）
+
+#### 步骤2.5：导出XSA文件
+1. File → Export → Export Hardware
+2. 选择"Include bitstream"（重要！）
+3. 选择导出路径，保存XSA文件
+4. 记录XSA文件路径（后续PetaLinux需要）
+
+**⏱️ 阶段2总耗时**：约1-2小时（取决于机器性能）
+
+---
+
+### 🔧 阶段3：PetaLinux更新和编译（需要等待）
+
+**目标**：更新PetaLinux工程并重新编译
+
+#### 步骤3.1：更新硬件描述
+```bash
+cd /home/norman/petalinux-projects/OMP
+petalinux-config --get-hw-description=<XSA文件路径>
+# 例如：petalinux-config --get-hw-description=/path/to/System_wrapper.xsa
+```
+- 这会自动更新硬件描述文件
+- 设备树会自动重新生成
+
+#### 步骤3.2：检查设备树生成
+```bash
+# 检查QSPI节点
+grep -A 5 "&qspi" components/plnx_workspace/device-tree/device-tree/pcw.dtsi
+
+# 检查I2C1节点
+grep -A 5 "&i2c1" components/plnx_workspace/device-tree/device-tree/pcw.dtsi
+
+# 检查VDMA中断配置
+grep -A 10 "axi_vdma_0.*43000000" components/plnx_workspace/device-tree/device-tree/pl.dtsi | grep interrupts
+```
+
+#### 步骤3.3：编译设备树（快速）
+```bash
+petalinux-build -c device-tree
+```
+- 只编译设备树，通常几分钟完成
+- 检查是否有错误
+
+#### 步骤3.4：完整编译（耗时）
+```bash
+petalinux-build
+```
+- 完整编译所有组件（U-Boot、内核、根文件系统等）
+- 可能需要30-60分钟
+
+**⏱️ 阶段3总耗时**：约40-70分钟
+
+---
+
+### 📦 阶段4：部署和测试
+
+#### 步骤4.1：准备SD卡文件
+```bash
+# 在VM上
+cd /home/norman/petalinux-projects/OMP/images/linux
+ls -lh BOOT.BIN image.ub system.bit
+```
+
+#### 步骤4.2：复制到SD卡
+- 将`BOOT.BIN`、`image.ub`、`system.bit`复制到SD卡BOOT分区（FAT32）
+
+#### 步骤4.3：上电测试
+- 插入SD卡，上电
+- 观察串口日志，检查：
+  - ✅ SPI Flash识别：`Flash: w25q128 (16 MiB)`
+  - ✅ RTC识别：`rtc-pcf8563 2-0051: registered as rtc0`
+  - ✅ VDMA初始化：`xilinx-vdma 43000000.dma: Xilinx AXI VDMA Engine Driver Probed!!`（无IRQ错误）
+
+---
+
+## 📝 执行建议
+
+1. **阶段1**：一次性完成所有Vivado配置（约10-20分钟）
+2. **阶段2**：开始后可以等待或做其他事情（1-2小时）
+3. **阶段3**：在VM上执行，可以等待或做其他事情（40-70分钟）
+4. **阶段4**：快速部署测试（约10分钟）
+
+**总预计时间**：约2-3小时（大部分是等待时间）

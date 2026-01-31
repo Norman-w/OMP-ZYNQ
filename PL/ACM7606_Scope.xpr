@@ -68,13 +68,13 @@
     <Option Name="WTVcsLaunchSim" Val="0"/>
     <Option Name="WTRivieraLaunchSim" Val="0"/>
     <Option Name="WTActivehdlLaunchSim" Val="0"/>
-    <Option Name="WTXSimExportSim" Val="35"/>
-    <Option Name="WTModelSimExportSim" Val="35"/>
-    <Option Name="WTQuestaExportSim" Val="35"/>
-    <Option Name="WTIesExportSim" Val="35"/>
-    <Option Name="WTVcsExportSim" Val="35"/>
-    <Option Name="WTRivieraExportSim" Val="35"/>
-    <Option Name="WTActivehdlExportSim" Val="35"/>
+    <Option Name="WTXSimExportSim" Val="36"/>
+    <Option Name="WTModelSimExportSim" Val="36"/>
+    <Option Name="WTQuestaExportSim" Val="36"/>
+    <Option Name="WTIesExportSim" Val="36"/>
+    <Option Name="WTVcsExportSim" Val="36"/>
+    <Option Name="WTRivieraExportSim" Val="36"/>
+    <Option Name="WTActivehdlExportSim" Val="36"/>
     <Option Name="GenerateIPUpgradeLog" Val="TRUE"/>
     <Option Name="XSimRadix" Val="hex"/>
     <Option Name="XSimTimeUnit" Val="ns"/>
@@ -110,9 +110,6 @@
         <CompFileExtendedInfo CompFileName="System.bd" FileRelPathName="ip/System_v_axi4s_vid_out_0_0/System_v_axi4s_vid_out_0_0.xci">
           <Proxy FileSetName="System_v_axi4s_vid_out_0_0"/>
         </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="System.bd" FileRelPathName="ip/System_axi_smc_0/System_axi_smc_0.xci">
-          <Proxy FileSetName="System_axi_smc_0"/>
-        </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="System.bd" FileRelPathName="ip/System_axi_dynclk_0_0/System_axi_dynclk_0_0.xci">
           <Proxy FileSetName="System_axi_dynclk_0_0"/>
         </CompFileExtendedInfo>
@@ -133,9 +130,6 @@
         </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="System.bd" FileRelPathName="ip/System_c_shift_ram_0_0/System_c_shift_ram_0_0.xci">
           <Proxy FileSetName="System_c_shift_ram_0_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="System.bd" FileRelPathName="ip/System_auto_pc_0/System_auto_pc_0.xci">
-          <Proxy FileSetName="System_auto_pc_0"/>
         </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="System.bd" FileRelPathName="ip/System_xbar_0/System_xbar_0.xci">
           <Proxy FileSetName="System_xbar_0"/>
@@ -242,12 +236,6 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="System_axi_smc_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/System_axi_smc_0" RelGenDir="$PGENDIR/System_axi_smc_0">
-      <Config>
-        <Option Name="TopModule" Val="System_axi_smc_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
     <FileSet Name="System_axis_data_fifo_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/System_axis_data_fifo_0_0" RelGenDir="$PGENDIR/System_axis_data_fifo_0_0">
       <Config>
         <Option Name="TopModule" Val="System_axis_data_fifo_0_0"/>
@@ -275,12 +263,6 @@
     <FileSet Name="System_xbar_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/System_xbar_0" RelGenDir="$PGENDIR/System_xbar_0">
       <Config>
         <Option Name="TopModule" Val="System_xbar_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="System_auto_pc_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/System_auto_pc_0" RelGenDir="$PGENDIR/System_auto_pc_0">
-      <Config>
-        <Option Name="TopModule" Val="System_auto_pc_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
@@ -396,18 +378,6 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="System_axi_smc_0_synth_1" Type="Ft3:Synth" SrcSet="System_axi_smc_0" Part="xc7z020clg484-2" ConstrsSet="System_axi_smc_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/System_axi_smc_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/System_axi_smc_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2021">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2021"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
     <Run Id="System_axis_data_fifo_0_0_synth_1" Type="Ft3:Synth" SrcSet="System_axis_data_fifo_0_0" Part="xc7z020clg484-2" ConstrsSet="System_axis_data_fifo_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/System_axis_data_fifo_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/System_axis_data_fifo_0_0_synth_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2021">
@@ -457,18 +427,6 @@
       <RQSFiles/>
     </Run>
     <Run Id="System_xbar_0_synth_1" Type="Ft3:Synth" SrcSet="System_xbar_0" Part="xc7z020clg484-2" ConstrsSet="System_xbar_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/System_xbar_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/System_xbar_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2021">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2021"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="System_auto_pc_0_synth_1" Type="Ft3:Synth" SrcSet="System_auto_pc_0" Part="xc7z020clg484-2" ConstrsSet="System_auto_pc_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/System_auto_pc_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/System_auto_pc_0_synth_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2021">
           <Desc>Vivado Synthesis Defaults</Desc>
@@ -636,25 +594,6 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="System_axi_smc_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-2" ConstrsSet="System_axi_smc_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="System_axi_smc_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/System_axi_smc_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2021">
-          <Desc>Default settings for Implementation.</Desc>
-        </StratHandle>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2021"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
     <Run Id="System_axis_data_fifo_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-2" ConstrsSet="System_axis_data_fifo_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="System_axis_data_fifo_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/System_axis_data_fifo_0_0_impl_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2021">
@@ -732,25 +671,6 @@
       <RQSFiles/>
     </Run>
     <Run Id="System_xbar_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-2" ConstrsSet="System_xbar_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="System_xbar_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/System_xbar_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2021">
-          <Desc>Default settings for Implementation.</Desc>
-        </StratHandle>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2021"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="System_auto_pc_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z020clg484-2" ConstrsSet="System_auto_pc_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="System_auto_pc_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/System_auto_pc_0_impl_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2021">
           <Desc>Default settings for Implementation.</Desc>

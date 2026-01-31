@@ -108,4 +108,8 @@ set_property PACKAGE_PIN AB16 [get_ports {lcd_0_data[11]}]
 set_property PACKAGE_PIN AA16 [get_ports {lcd_0_data[12]}]
 set_property PACKAGE_PIN AA17 [get_ports {lcd_0_data[14]}]
 
-
+# I2C1 EMIO约束（PL_I2C_SCL/SDA）
+set_property IOSTANDARD LVCMOS33 [get_ports {IIC_1_0_scl_io}]
+set_property IOSTANDARD LVCMOS33 [get_ports {IIC_1_0_sda_io}]
+set_property PACKAGE_PIN G22 [get_ports {IIC_1_0_scl_io}]
+set_property PACKAGE_PIN H22 [get_ports {IIC_1_0_sda_io}]

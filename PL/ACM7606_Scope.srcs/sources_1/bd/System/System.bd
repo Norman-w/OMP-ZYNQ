@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xA1D3D2256160CBF3",
+      "boundary_crc": "0xC24E6EA9E1530498",
       "device": "xc7z020clg484-2",
       "gen_directory": "../../../../ACM7606_Scope.gen/sources_1/bd/System",
       "name": "System",
@@ -113,6 +113,11 @@
         "mode": "Master",
         "vlnv_bus_definition": "xilinx.com:user:lcd:1.0",
         "vlnv": "xilinx.com:user:lcd_rtl:1.0"
+      },
+      "IIC_1_0": {
+        "mode": "Master",
+        "vlnv_bus_definition": "xilinx.com:interface:iic:1.0",
+        "vlnv": "xilinx.com:interface:iic_rtl:1.0"
       }
     },
     "ports": {
@@ -209,7 +214,7 @@
             "value": "200.000000"
           },
           "PCW_ACT_QSPI_PERIPHERAL_FREQMHZ": {
-            "value": "10.000000"
+            "value": "200.000000"
           },
           "PCW_ACT_SDIO_PERIPHERAL_FREQMHZ": {
             "value": "100.000000"
@@ -440,7 +445,7 @@
             "value": "0"
           },
           "PCW_EN_EMIO_I2C1": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_EN_EMIO_MODEM_UART0": {
             "value": "0"
@@ -503,7 +508,7 @@
             "value": "1"
           },
           "PCW_EN_I2C1": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_EN_MODEM_UART0": {
             "value": "0"
@@ -521,7 +526,7 @@
             "value": "0"
           },
           "PCW_EN_QSPI": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_EN_RST0_PORT": {
             "value": "1"
@@ -664,8 +669,17 @@
           "PCW_I2C0_RESET_ENABLE": {
             "value": "0"
           },
+          "PCW_I2C1_BASEADDR": {
+            "value": "0xE0005000"
+          },
+          "PCW_I2C1_HIGHADDR": {
+            "value": "0xE0005FFF"
+          },
+          "PCW_I2C1_I2C1_IO": {
+            "value": "EMIO"
+          },
           "PCW_I2C1_PERIPHERAL_ENABLE": {
-            "value": "0"
+            "value": "1"
           },
           "PCW_I2C_PERIPHERAL_FREQMHZ": {
             "value": "111.111115"
@@ -1160,10 +1174,10 @@
             "value": "54"
           },
           "PCW_MIO_TREE_PERIPHERALS": {
-            "value": "GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#GPIO#GPIO#UART 1#UART 1#I2C 0#I2C 0#Enet 0#Enet 0"
+            "value": "GPIO#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#GPIO#GPIO#UART 1#UART 1#I2C 0#I2C 0#Enet 0#Enet 0"
           },
           "PCW_MIO_TREE_SIGNALS": {
-            "value": "gpio[0]#gpio[1]#gpio[2]#gpio[3]#gpio[4]#gpio[5]#gpio[6]#gpio[7]#gpio[8]#gpio[9]#gpio[10]#gpio[11]#gpio[12]#gpio[13]#gpio[14]#gpio[15]#tx_clk#txd[0]#txd[1]#txd[2]#txd[3]#tx_ctl#rx_clk#rxd[0]#rxd[1]#rxd[2]#rxd[3]#rx_ctl#gpio[28]#gpio[29]#gpio[30]#gpio[31]#gpio[32]#gpio[33]#gpio[34]#gpio[35]#gpio[36]#gpio[37]#gpio[38]#gpio[39]#clk#cmd#data[0]#data[1]#data[2]#data[3]#gpio[46]#gpio[47]#tx#rx#scl#sda#mdc#mdio"
+            "value": "gpio[0]#qspi0_ss_b#qspi0_io[0]#qspi0_io[1]#qspi0_io[2]#qspi0_io[3]/HOLD_B#qspi0_sclk#gpio[7]#gpio[8]#gpio[9]#gpio[10]#gpio[11]#gpio[12]#gpio[13]#gpio[14]#gpio[15]#tx_clk#txd[0]#txd[1]#txd[2]#txd[3]#tx_ctl#rx_clk#rxd[0]#rxd[1]#rxd[2]#rxd[3]#rx_ctl#gpio[28]#gpio[29]#gpio[30]#gpio[31]#gpio[32]#gpio[33]#gpio[34]#gpio[35]#gpio[36]#gpio[37]#gpio[38]#gpio[39]#clk#cmd#data[0]#data[1]#data[2]#data[3]#gpio[46]#gpio[47]#tx#rx#scl#sda#mdc#mdio"
           },
           "PCW_M_AXI_GP0_ENABLE_STATIC_REMAP": {
             "value": "0"
@@ -1197,9 +1211,6 @@
           },
           "PCW_NAND_CYCLES_T_WP": {
             "value": "1"
-          },
-          "PCW_NAND_PERIPHERAL_ENABLE": {
-            "value": "0"
           },
           "PCW_NOR_CS0_T_CEOE": {
             "value": "1"
@@ -1241,9 +1252,6 @@
             "value": "1"
           },
           "PCW_NOR_CS1_WE_TIME": {
-            "value": "0"
-          },
-          "PCW_NOR_PERIPHERAL_ENABLE": {
             "value": "0"
           },
           "PCW_NOR_SRAM_CS0_T_CEOE": {
@@ -1298,6 +1306,12 @@
             "value": "0"
           },
           "PCW_P2F_I2C0_INTR": {
+            "value": "0"
+          },
+          "PCW_P2F_I2C1_INTR": {
+            "value": "0"
+          },
+          "PCW_P2F_QSPI_INTR": {
             "value": "0"
           },
           "PCW_P2F_SDIO0_INTR": {
@@ -1357,6 +1371,21 @@
           "PCW_PS7_SI_REV": {
             "value": "PRODUCTION"
           },
+          "PCW_QSPI_GRP_FBCLK_ENABLE": {
+            "value": "0"
+          },
+          "PCW_QSPI_GRP_IO1_ENABLE": {
+            "value": "0"
+          },
+          "PCW_QSPI_GRP_SINGLE_SS_ENABLE": {
+            "value": "1"
+          },
+          "PCW_QSPI_GRP_SINGLE_SS_IO": {
+            "value": "MIO 1 .. 6"
+          },
+          "PCW_QSPI_GRP_SS1_ENABLE": {
+            "value": "0"
+          },
           "PCW_QSPI_INTERNAL_HIGHADDRESS": {
             "value": "0xFCFFFFFF"
           },
@@ -1364,7 +1393,13 @@
             "value": "IO PLL"
           },
           "PCW_QSPI_PERIPHERAL_ENABLE": {
-            "value": "0"
+            "value": "1"
+          },
+          "PCW_QSPI_PERIPHERAL_FREQMHZ": {
+            "value": "200"
+          },
+          "PCW_QSPI_QSPI_IO": {
+            "value": "MIO 1 .. 6"
           },
           "PCW_SD0_GRP_CD_ENABLE": {
             "value": "0"
@@ -1398,6 +1433,9 @@
           },
           "PCW_SDIO_PERIPHERAL_VALID": {
             "value": "1"
+          },
+          "PCW_SINGLE_QSPI_DATA_MODE": {
+            "value": "x4"
           },
           "PCW_SMC_CYCLE_T0": {
             "value": "NA"
@@ -1975,7 +2013,12 @@
         "vlnv": "xilinx.com:ip:xlconcat:2.1",
         "xci_name": "System_xlconcat_0_0",
         "xci_path": "ip\\System_xlconcat_0_0\\System_xlconcat_0_0.xci",
-        "inst_hier_path": "xlconcat_0"
+        "inst_hier_path": "xlconcat_0",
+        "parameters": {
+          "NUM_PORTS": {
+            "value": "3"
+          }
+        }
       },
       "ADC_Acq2DDR_IP_0": {
         "vlnv": "xilinx.com:user:ADC_Acq2DDR_IP:1.0",
@@ -2958,6 +3001,12 @@
           "processing_system7_0/GPIO_0"
         ]
       },
+      "processing_system7_0_IIC_1": {
+        "interface_ports": [
+          "IIC_1_0",
+          "processing_system7_0/IIC_1"
+        ]
+      },
       "processing_system7_0_M_AXI_GP0": {
         "interface_ports": [
           "processing_system7_0/M_AXI_GP0",
@@ -3128,6 +3177,12 @@
           "rgb2lcd_0/pixel_clk",
           "v_axi4s_vid_out_0/vid_io_out_clk",
           "v_tc_0/clk"
+        ]
+      },
+      "axi_vdma_0_mm2s_introut": {
+        "ports": [
+          "axi_vdma_0/mm2s_introut",
+          "xlconcat_0/In2"
         ]
       },
       "processing_system7_0_FCLK_CLK0": {
